@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>(Unofficial) DCL Network Explorer</title>
+    <title>Unofficial DCL Network Probe</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -85,14 +85,6 @@
             justify-content: center;
         }
         .header-icon svg { width: 20px; height: 20px; fill: white; }
-        .header-logo {
-            width: 36px;
-            height: 36px;
-            object-fit: contain;
-            border-radius: 6px;
-            background: white;
-            padding: 4px;
-        }
         h1 {
             font-size: 18px;
             font-weight: 600;
@@ -665,9 +657,11 @@
     <div id="container">
         <div id="sidebar">
             <div class="header">
-                <img src="https://webui.dcl.csa-iot.org/images/logo-transparent.png" alt="DCL Logo" class="header-logo">
+                <div class="header-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                </div>
                 <div>
-                    <h1>(Unofficial) DCL Network Explorer</h1>
+                    <h1>Unofficial DCL Network Probe</h1>
                     <div class="header-subtitle">Distributed Compliance Ledger</div>
                 </div>
             </div>
@@ -729,7 +723,7 @@ http://54.183.6.67:26657</textarea>
         <div id="graph">
             <svg></svg>
             <div id="node-info"></div>
-            <div id="watermark">(Unofficial) DCL Network Explorer</div>
+            <div id="watermark">Unofficial DCL Network Probe</div>
             <div id="controls">
                 <button onclick="zoomIn()">
                     <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -1290,68 +1284,83 @@ http://54.183.6.67:26657</textarea>
                 const pageWidth = pdf.internal.pageSize.getWidth();
                 const pageHeight = pdf.internal.pageSize.getHeight();
 
-                // Leave space for legend at bottom
-                const legendHeight = 30;
-                const margin = 10;
-                const graphAreaWidth = pageWidth - (margin * 2);
-                const graphAreaHeight = pageHeight - legendHeight - margin;
+                // Calculate content dimensions
+                const margin = 15;
+                const footerHeight = 12;
+                const legendHeight = 20;
+                const contentHeight = pageHeight - (margin * 2) - footerHeight;
 
                 const imgRatio = canvas.width / canvas.height;
 
-                // Fill the available area as much as possible
-                let imgWidth = graphAreaWidth;
+                // Calculate image size to fit in content area (leaving room for legend below)
+                const availableHeight = contentHeight - legendHeight;
+                const availableWidth = pageWidth - (margin * 2);
+
+                let imgWidth = availableWidth;
                 let imgHeight = imgWidth / imgRatio;
 
-                if (imgHeight > graphAreaHeight) {
-                    imgHeight = graphAreaHeight;
+                if (imgHeight > availableHeight) {
+                    imgHeight = availableHeight;
                     imgWidth = imgHeight * imgRatio;
                 }
 
-                // Center horizontally, position at top
-                const x = (pageWidth - imgWidth) / 2;
-                const y = margin;
+                // Center everything vertically and horizontally
+                const totalContentHeight = imgHeight + legendHeight;
+                const contentStartY = margin + (contentHeight - totalContentHeight) / 2;
 
-                pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+                const imgX = (pageWidth - imgWidth) / 2;
+                const imgY = contentStartY;
 
-                // Draw legend on same page at bottom
-                const legendY = pageHeight - legendHeight + 5;
+                pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth, imgHeight);
+
+                // Legend colors
                 const legendColors = {
-                    validator: [249, 117, 131],
-                    sentry: [86, 211, 100],
-                    observer: [88, 166, 255],
-                    seed: [210, 153, 34],
-                    unknown: [139, 148, 158]
+                    Validator: [249, 117, 131],
+                    Sentry: [86, 211, 100],
+                    Observer: [88, 166, 255],
+                    Seed: [210, 153, 34],
+                    Unknown: [139, 148, 158]
                 };
 
+                // Count by type (capitalize)
                 const typeCounts = {};
                 Object.values(nodes).forEach(n => {
-                    typeCounts[n.type] = (typeCounts[n.type] || 0) + 1;
+                    const type = n.type.charAt(0).toUpperCase() + n.type.slice(1);
+                    typeCounts[type] = (typeCounts[type] || 0) + 1;
                 });
 
-                // Draw legend items horizontally
-                let legendX = 20;
+                // Calculate legend width to center it
                 pdf.setFontSize(9);
-                for (const [type, count] of Object.entries(typeCounts)) {
-                    const color = legendColors[type] || legendColors.unknown;
+                let totalLegendWidth = 0;
+                const legendItems = Object.entries(typeCounts);
+                legendItems.forEach(([type, count]) => {
+                    totalLegendWidth += 8 + pdf.getTextWidth(`${type}: ${count}`) + 12;
+                });
+
+                // Draw legend centered below graph
+                const legendY = imgY + imgHeight + 12;
+                let legendX = (pageWidth - totalLegendWidth) / 2;
+
+                for (const [type, count] of legendItems) {
+                    const color = legendColors[type] || legendColors.Unknown;
                     pdf.setFillColor(color[0], color[1], color[2]);
-                    pdf.circle(legendX, legendY, 3, 'F');
-                    pdf.setTextColor(100, 100, 100);
+                    pdf.circle(legendX + 3, legendY, 3, 'F');
+                    pdf.setTextColor(80, 80, 80);
                     const label = `${type}: ${count}`;
-                    pdf.text(label, legendX + 5, legendY + 1);
-                    legendX += pdf.getTextWidth(label) + 15;
+                    pdf.text(label, legendX + 8, legendY + 1);
+                    legendX += 8 + pdf.getTextWidth(label) + 12;
                 }
 
-                // Add stats on the right side of legend
+                // Footer with title, stats, and date
+                const footerY = pageHeight - margin;
                 pdf.setFontSize(8);
-                pdf.setTextColor(120, 120, 120);
-                const statsText = `Nodes: ${Object.keys(nodes).length} | Connections: ${edges.length} | RPC: ${Object.values(nodes).filter(n => n.rpc_accessible).length} | Orgs: ${new Set(Object.values(nodes).map(n => n.org)).size}`;
-                pdf.text(statsText, pageWidth - 10, legendY + 1, { align: 'right' });
+                pdf.setTextColor(140, 140, 140);
+                pdf.text('Unofficial DCL Network Probe', margin, footerY);
 
-                // Add title and date
-                pdf.setFontSize(8);
-                pdf.setTextColor(150, 150, 150);
-                pdf.text('(Unofficial) DCL Network Explorer', 10, pageHeight - 5);
-                pdf.text(new Date().toLocaleString(), pageWidth - 10, pageHeight - 5, { align: 'right' });
+                const statsText = `Nodes: ${Object.keys(nodes).length}  |  Connections: ${edges.length}  |  RPC Accessible: ${Object.values(nodes).filter(n => n.rpc_accessible).length}  |  Organizations: ${new Set(Object.values(nodes).map(n => n.org)).size}`;
+                pdf.text(statsText, pageWidth / 2, footerY, { align: 'center' });
+
+                pdf.text(new Date().toLocaleString(), pageWidth - margin, footerY, { align: 'right' });
 
                 pdf.save(`dcl-network-${new Date().toISOString().slice(0,10)}.pdf`);
                 log('PDF exported successfully', 'success');
