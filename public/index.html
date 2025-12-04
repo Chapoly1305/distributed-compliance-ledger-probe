@@ -228,12 +228,20 @@
         #node-info .label { color: var(--text-secondary); font-weight: 500; }
         #node-info .value { color: var(--text-primary); word-break: break-all; text-align: right; max-width: 180px; }
 
-        /* Legend */
-        .legend {
+        /* Legend - in graph area */
+        #graph-legend {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px 16px;
             display: flex;
+            gap: 16px;
             flex-wrap: wrap;
-            gap: 12px;
-            margin-top: 8px;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         .legend-item {
             display: flex;
@@ -241,12 +249,32 @@
             gap: 6px;
             font-size: 12px;
             color: var(--text-secondary);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background 0.2s, opacity 0.2s;
+            user-select: none;
+        }
+        .legend-item:hover {
+            background: var(--bg-tertiary);
+        }
+        .legend-item.inactive {
+            opacity: 0.4;
+        }
+        .legend-item.inactive .legend-dot {
+            opacity: 0.5;
         }
         .legend-dot {
             width: 12px;
             height: 12px;
             border-radius: 50%;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            flex-shrink: 0;
+        }
+        .legend-count {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-left: 2px;
         }
 
         /* SVG and Graph */
@@ -705,16 +733,6 @@ http://54.183.6.67:26657</textarea>
                     </div>
                 </div>
             </div>
-            <div class="section">
-                <h2>Legend</h2>
-                <div class="legend">
-                    <div class="legend-item"><div class="legend-dot" style="background: linear-gradient(135deg, #f97583, #ff7b72)"></div> Validator</div>
-                    <div class="legend-item"><div class="legend-dot" style="background: linear-gradient(135deg, #56d364, #3fb950)"></div> Sentry</div>
-                    <div class="legend-item"><div class="legend-dot" style="background: linear-gradient(135deg, #58a6ff, #388bfd)"></div> Observer</div>
-                    <div class="legend-item"><div class="legend-dot" style="background: linear-gradient(135deg, #d29922, #e3b341)"></div> Seed</div>
-                    <div class="legend-item"><div class="legend-dot" style="background: linear-gradient(135deg, #8b949e, #6e7681)"></div> Unknown</div>
-                </div>
-            </div>
             <div class="section" style="flex-shrink: 0;">
                 <h2>Discovery Log</h2>
             </div>
@@ -722,6 +740,33 @@ http://54.183.6.67:26657</textarea>
         </div>
         <div id="graph">
             <svg></svg>
+            <div id="graph-legend">
+                <div class="legend-item" data-type="validator" onclick="toggleTypeFilter('validator')">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, #f97583, #ff7b72)"></div>
+                    <span>Validator</span>
+                    <span class="legend-count" id="count-validator">0</span>
+                </div>
+                <div class="legend-item" data-type="sentry" onclick="toggleTypeFilter('sentry')">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, #56d364, #3fb950)"></div>
+                    <span>Sentry</span>
+                    <span class="legend-count" id="count-sentry">0</span>
+                </div>
+                <div class="legend-item" data-type="observer" onclick="toggleTypeFilter('observer')">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, #58a6ff, #388bfd)"></div>
+                    <span>Observer</span>
+                    <span class="legend-count" id="count-observer">0</span>
+                </div>
+                <div class="legend-item" data-type="seed" onclick="toggleTypeFilter('seed')">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, #d29922, #e3b341)"></div>
+                    <span>Seed</span>
+                    <span class="legend-count" id="count-seed">0</span>
+                </div>
+                <div class="legend-item" data-type="unknown" onclick="toggleTypeFilter('unknown')">
+                    <div class="legend-dot" style="background: linear-gradient(135deg, #8b949e, #6e7681)"></div>
+                    <span>Unknown</span>
+                    <span class="legend-count" id="count-unknown">0</span>
+                </div>
+            </div>
             <div id="node-info"></div>
             <div id="watermark">Unofficial DCL Network Probe</div>
             <div id="controls">
@@ -785,6 +830,9 @@ http://54.183.6.67:26657</textarea>
         let visitedRpcs = new Set();
         let discoveryQueue = [];
         let isDiscovering = false;
+
+        // Type filter state - all types visible by default
+        let activeTypes = new Set(['validator', 'sentry', 'observer', 'seed', 'unknown']);
 
         let simulation, svg, g, linkGroup, nodeGroup, zoom;
 
@@ -1104,6 +1152,9 @@ http://54.183.6.67:26657</textarea>
                 // Gentler simulation during discovery to prevent flashing
                 simulation.alpha(0.1).alphaDecay(0.02).restart();
             }
+
+            // Apply type filter
+            applyTypeFilter();
         }
 
         function applyLayout() {
@@ -1155,6 +1206,58 @@ http://54.183.6.67:26657</textarea>
             document.getElementById("edgeCount").textContent = edges.length;
             document.getElementById("rpcCount").textContent = nodeArray.filter(n => n.rpc_accessible).length;
             document.getElementById("orgCount").textContent = orgs.size;
+
+            // Update legend counts
+            const typeCounts = { validator: 0, sentry: 0, observer: 0, seed: 0, unknown: 0 };
+            nodeArray.forEach(n => {
+                typeCounts[n.type] = (typeCounts[n.type] || 0) + 1;
+            });
+            Object.entries(typeCounts).forEach(([type, count]) => {
+                const el = document.getElementById(`count-${type}`);
+                if (el) el.textContent = count;
+            });
+        }
+
+        function toggleTypeFilter(type) {
+            if (activeTypes.has(type)) {
+                // Don't allow deselecting all types
+                if (activeTypes.size > 1) {
+                    activeTypes.delete(type);
+                }
+            } else {
+                activeTypes.add(type);
+            }
+            updateLegendUI();
+            applyTypeFilter();
+        }
+
+        function updateLegendUI() {
+            document.querySelectorAll('#graph-legend .legend-item').forEach(item => {
+                const type = item.dataset.type;
+                if (activeTypes.has(type)) {
+                    item.classList.remove('inactive');
+                } else {
+                    item.classList.add('inactive');
+                }
+            });
+        }
+
+        function applyTypeFilter() {
+            // Filter nodes
+            nodeGroup.selectAll("g.node")
+                .style("opacity", d => activeTypes.has(d.type) ? 1 : 0.15)
+                .style("pointer-events", d => activeTypes.has(d.type) ? "auto" : "none");
+
+            // Filter links - show at reduced opacity if either end is filtered
+            linkGroup.selectAll("line")
+                .style("opacity", d => {
+                    const srcType = typeof d.source === 'object' ? d.source.type : nodes[d.source]?.type;
+                    const tgtType = typeof d.target === 'object' ? d.target.type : nodes[d.target]?.type;
+                    if (activeTypes.has(srcType) && activeTypes.has(tgtType)) {
+                        return settings.linkOpacity / 100;
+                    }
+                    return 0.05;
+                });
         }
 
         function showNodeInfo(event, d) {
@@ -1259,6 +1362,7 @@ http://54.183.6.67:26657</textarea>
             document.getElementById("watermark").style.display = "block";
             document.getElementById("controls").style.display = "none";
             document.getElementById("node-info").style.display = "none";
+            document.getElementById("graph-legend").style.display = "none";
 
             await new Promise(r => setTimeout(r, 100));
 
@@ -1371,6 +1475,7 @@ http://54.183.6.67:26657</textarea>
             document.getElementById("export-overlay").style.display = "none";
             document.getElementById("watermark").style.display = "none";
             document.getElementById("controls").style.display = "flex";
+            document.getElementById("graph-legend").style.display = "flex";
         }
 
         function loadJsonFile(event) {
