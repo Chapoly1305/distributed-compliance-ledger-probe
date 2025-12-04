@@ -86,9 +86,12 @@
         }
         .header-icon svg { width: 20px; height: 20px; fill: white; }
         .header-logo {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             object-fit: contain;
+            border-radius: 6px;
+            background: white;
+            padding: 4px;
         }
         h1 {
             font-size: 18px;
@@ -1288,23 +1291,25 @@ http://54.183.6.67:26657</textarea>
                 const pageHeight = pdf.internal.pageSize.getHeight();
 
                 // Leave space for legend at bottom
-                const legendHeight = 25;
-                const graphAreaHeight = pageHeight - legendHeight - 15;
+                const legendHeight = 30;
+                const margin = 10;
+                const graphAreaWidth = pageWidth - (margin * 2);
+                const graphAreaHeight = pageHeight - legendHeight - margin;
 
                 const imgRatio = canvas.width / canvas.height;
-                const graphAreaRatio = (pageWidth - 20) / graphAreaHeight;
 
-                let imgWidth, imgHeight;
-                if (imgRatio > graphAreaRatio) {
-                    imgWidth = pageWidth - 20;
-                    imgHeight = imgWidth / imgRatio;
-                } else {
+                // Fill the available area as much as possible
+                let imgWidth = graphAreaWidth;
+                let imgHeight = imgWidth / imgRatio;
+
+                if (imgHeight > graphAreaHeight) {
                     imgHeight = graphAreaHeight;
                     imgWidth = imgHeight * imgRatio;
                 }
 
+                // Center horizontally, position at top
                 const x = (pageWidth - imgWidth) / 2;
-                const y = 10;
+                const y = margin;
 
                 pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
 
