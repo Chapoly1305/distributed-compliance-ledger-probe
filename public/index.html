@@ -1309,10 +1309,10 @@ http://54.183.6.67:26657</textarea>
                 Object.values(nodes).forEach(n => {
                     typeCounts[n.type] = (typeCounts[n.type] || 0) + 1;
                 });
-                let y = 220;
+                let textY = 220;
                 for (const [type, count] of Object.entries(typeCounts)) {
-                    pdf.text(`  ${type}: ${count}`, 40, y);
-                    y += 20;
+                    pdf.text(`  ${type}: ${count}`, 40, textY);
+                    textY += 20;
                 }
 
                 pdf.save(`dcl-network-${new Date().toISOString().slice(0,10)}.pdf`);
