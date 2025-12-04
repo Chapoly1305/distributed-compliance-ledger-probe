@@ -4,123 +4,327 @@
     <meta charset="UTF-8">
     <title>DCL Network Explorer</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
+        /* Theme Variables */
+        :root {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-tertiary: #21262d;
+            --border-color: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --text-muted: #6e7681;
+            --accent-blue: #58a6ff;
+            --accent-green: #238636;
+            --accent-green-hover: #2ea043;
+            --link-color: #484f58;
+            --node-stroke: #30363d;
+            --label-color: #c9d1d9;
+            --label-shadow: 0 1px 3px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5);
+            --overlay-bg: rgba(0,0,0,0.6);
+            --graph-bg: #0d1117;
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f6f8fa;
+            --bg-tertiary: #eaeef2;
+            --border-color: #d0d7de;
+            --text-primary: #1f2328;
+            --text-secondary: #656d76;
+            --text-muted: #8c959f;
+            --accent-blue: #0969da;
+            --accent-green: #1a7f37;
+            --accent-green-hover: #2da44e;
+            --link-color: #afb8c1;
+            --node-stroke: #d0d7de;
+            --label-color: #1f2328;
+            --label-shadow: 0 1px 2px rgba(255,255,255,0.9), 0 0 4px rgba(255,255,255,0.7);
+            --overlay-bg: rgba(255,255,255,0.8);
+            --graph-bg: #ffffff;
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
-            background: #0d1117;
-            color: #c9d1d9;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             overflow: hidden;
+            transition: background 0.3s, color 0.3s;
         }
         #container { display: flex; height: 100vh; }
         #sidebar {
-            width: 350px;
-            background: #161b22;
-            border-right: 1px solid #30363d;
+            width: 360px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            transition: background 0.3s, border-color 0.3s;
         }
-        #graph { flex: 1; position: relative; }
+        #graph { flex: 1; position: relative; background: var(--graph-bg); transition: background 0.3s; }
+
+        /* Header */
+        .header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .header-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #58a6ff 0%, #a371f7 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .header-icon svg { width: 20px; height: 20px; fill: white; }
         h1 {
-            padding: 16px;
             font-size: 18px;
-            border-bottom: 1px solid #30363d;
-            background: #0d1117;
+            font-weight: 600;
+            color: var(--text-primary);
         }
-        .section { padding: 12px 16px; border-bottom: 1px solid #30363d; }
-        .section h2 { font-size: 12px; color: #8b949e; margin-bottom: 8px; text-transform: uppercase; }
+        .header-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .section { padding: 16px 20px; border-bottom: 1px solid var(--border-color); }
+        .section h2 {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Buttons */
         button {
-            background: #238636;
+            background: var(--accent-green);
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 10px 16px;
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 500;
             width: 100%;
+            transition: background 0.2s, transform 0.1s;
         }
-        button:hover { background: #2ea043; }
-        button:disabled { background: #30363d; cursor: not-allowed; }
-        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        button:hover { background: var(--accent-green-hover); }
+        button:active { transform: scale(0.98); }
+        button:disabled { background: var(--bg-tertiary); cursor: not-allowed; color: var(--text-muted); }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+        .btn-secondary:hover { background: var(--border-color); }
+
+        .btn-primary-alt {
+            background: var(--accent-blue);
+        }
+        .btn-primary-alt:hover { background: #4293e6; }
+
+        /* Stats */
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .stat {
-            background: #0d1117;
-            padding: 12px;
-            border-radius: 6px;
+            background: var(--bg-primary);
+            padding: 16px;
+            border-radius: 8px;
             text-align: center;
+            border: 1px solid var(--border-color);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .stat-value { font-size: 24px; font-weight: bold; color: #58a6ff; }
-        .stat-label { font-size: 11px; color: #8b949e; margin-top: 4px; }
+        .stat:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--accent-blue);
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        /* Log */
         #log {
             flex: 1;
             overflow-y: auto;
-            padding: 12px 16px;
+            padding: 12px 20px;
             font-size: 11px;
-            font-family: monospace;
-            background: #0d1117;
+            font-family: "SF Mono", "Fira Code", monospace;
+            background: var(--bg-primary);
         }
-        .log-entry { padding: 2px 0; color: #8b949e; }
-        .log-entry.error { color: #f85149; }
-        .log-entry.success { color: #56d364; }
+        .log-entry {
+            padding: 4px 0;
+            color: var(--text-secondary);
+            border-left: 2px solid transparent;
+            padding-left: 8px;
+            margin-left: -8px;
+        }
+        .log-entry.error { color: #f85149; border-left-color: #f85149; }
+        .log-entry.success { color: #56d364; border-left-color: #56d364; }
+
+        /* Node Info Panel */
         #node-info {
             position: absolute;
-            top: 16px;
-            right: 16px;
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 16px;
-            min-width: 280px;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 300px;
+            max-width: 360px;
             display: none;
             font-size: 13px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            backdrop-filter: blur(8px);
         }
-        #node-info h3 { margin-bottom: 12px; color: #58a6ff; }
+        #node-info h3 {
+            margin-bottom: 16px;
+            color: var(--accent-blue);
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        #node-info .type-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
         #node-info .row {
             display: flex;
             justify-content: space-between;
-            padding: 4px 0;
-            border-bottom: 1px solid #21262d;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
         }
-        #node-info .label { color: #8b949e; }
-        #node-info .value { color: #c9d1d9; word-break: break-all; }
+        #node-info .row:last-child { border-bottom: none; }
+        #node-info .label { color: var(--text-secondary); font-weight: 500; }
+        #node-info .value { color: var(--text-primary); word-break: break-all; text-align: right; max-width: 180px; }
+
+        /* Legend */
         .legend {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 12px;
             margin-top: 8px;
         }
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 4px;
-            font-size: 11px;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-secondary);
         }
         .legend-dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
+
+        /* SVG and Graph */
         svg { width: 100%; height: 100%; }
         .node { cursor: pointer; }
-        .node circle { stroke: #30363d; stroke-width: 1.5px; }
-        .node text { font-size: 10px; fill: #8b949e; pointer-events: none; }
-        .node.highlighted circle { stroke: #f0883e; stroke-width: 3px; }
-        .link { stroke: #586069; stroke-opacity: 0.4; stroke-width: 1px; }
-        .link.highlighted { stroke: #f0883e; stroke-opacity: 1; stroke-width: 2px; }
+        .node circle {
+            stroke: var(--node-stroke);
+            stroke-width: 2px;
+            transition: stroke-width 0.2s, filter 0.2s;
+        }
+        .node:hover circle {
+            filter: brightness(1.2);
+        }
+        .node text {
+            font-size: 11px;
+            font-weight: 500;
+            fill: var(--label-color);
+            pointer-events: none;
+            text-shadow: var(--label-shadow);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        .node.highlighted circle {
+            stroke: #f0883e;
+            stroke-width: 3px;
+            filter: drop-shadow(0 0 8px rgba(240, 136, 62, 0.5));
+        }
+        .link {
+            stroke: var(--link-color);
+            stroke-opacity: 0.5;
+            stroke-width: 1px;
+            transition: stroke 0.2s, stroke-opacity 0.2s;
+        }
+        .link.highlighted {
+            stroke: #f0883e;
+            stroke-opacity: 1;
+            stroke-width: 2px;
+        }
+
+        /* Controls */
         #controls {
             position: absolute;
-            bottom: 16px;
-            left: 16px;
+            bottom: 20px;
+            left: 20px;
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
         #controls button {
             width: auto;
-            padding: 6px 12px;
+            padding: 8px 14px;
             font-size: 12px;
-            background: #21262d;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        #controls button:hover { background: #30363d; }
+        #controls button:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--text-muted);
+        }
+        #controls button svg {
+            width: 14px;
+            height: 14px;
+            fill: currentColor;
+        }
+
+        /* Watermark for PDF export */
+        #watermark {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            font-size: 14px;
+            color: var(--text-muted);
+            display: none;
+            background: var(--bg-secondary);
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
         /* Settings Dialog */
         #settings-overlay {
             position: fixed;
@@ -128,179 +332,333 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.6);
+            background: var(--overlay-bg);
             display: none;
             align-items: center;
             justify-content: center;
             z-index: 1000;
+            backdrop-filter: blur(4px);
         }
         #settings-dialog {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 20px;
-            min-width: 320px;
-            max-width: 400px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            min-width: 380px;
+            max-width: 440px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.3);
         }
         #settings-dialog h3 {
-            margin-bottom: 16px;
-            color: #58a6ff;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .settings-section {
+            margin-bottom: 20px;
+        }
+        .settings-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
         }
         .setting-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid #21262d;
+            padding: 12px 0;
         }
         .setting-row:last-child { border-bottom: none; }
-        .setting-label { color: #c9d1d9; font-size: 13px; }
-        .setting-sublabel { color: #8b949e; font-size: 11px; margin-top: 2px; }
-        .setting-control { display: flex; align-items: center; gap: 8px; }
-        .setting-control input[type="range"] { width: 100px; }
-        .setting-control select {
-            background: #0d1117;
-            color: #c9d1d9;
-            border: 1px solid #30363d;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 12px;
+        .setting-label { color: var(--text-primary); font-size: 13px; font-weight: 500; }
+        .setting-sublabel { color: var(--text-secondary); font-size: 11px; margin-top: 2px; }
+        .setting-control { display: flex; align-items: center; gap: 10px; }
+        .setting-control input[type="range"] {
+            width: 100px;
+            accent-color: var(--accent-blue);
         }
-        .setting-value { color: #8b949e; font-size: 11px; min-width: 40px; text-align: right; }
+        .setting-control select {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .setting-value {
+            color: var(--text-secondary);
+            font-size: 12px;
+            min-width: 45px;
+            text-align: right;
+            font-weight: 500;
+        }
         #settings-dialog .btn-row {
             display: flex;
             justify-content: flex-end;
-            gap: 8px;
-            margin-top: 16px;
+            gap: 10px;
+            margin-top: 24px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
         }
-        #settings-dialog button {
+        #settings-dialog .btn-row button {
             width: auto;
-            padding: 6px 16px;
+            padding: 10px 20px;
         }
+
+        /* Inputs */
         .seed-input {
             width: 100%;
-            padding: 8px;
+            padding: 10px 12px;
             margin-top: 8px;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 4px;
-            color: #c9d1d9;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
             font-size: 12px;
-            font-family: monospace;
+            font-family: "SF Mono", "Fira Code", monospace;
+            resize: vertical;
         }
         .seed-input:focus {
             outline: none;
-            border-color: #58a6ff;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.2);
+        }
+
+        .helper-text {
+            margin-top: 10px;
+            font-size: 11px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        /* PDF Export Overlay */
+        #export-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--overlay-bg);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+        #export-dialog {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+        }
+        .export-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
+    <!-- Export Loading Overlay -->
+    <div id="export-overlay">
+        <div id="export-dialog">
+            <div class="export-spinner"></div>
+            <div style="color: var(--text-primary); font-weight: 500;">Generating PDF...</div>
+            <div style="color: var(--text-secondary); font-size: 12px; margin-top: 8px;">This may take a moment</div>
+        </div>
+    </div>
+
     <!-- Settings Dialog -->
     <div id="settings-overlay" onclick="if(event.target===this) closeSettings()">
         <div id="settings-dialog">
-            <h3>Display Settings</h3>
-            <div class="setting-row">
-                <div>
-                    <div class="setting-label">Link Opacity</div>
-                    <div class="setting-sublabel">Visibility of connection lines</div>
+            <h3>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 15.5A3.5 3.5 0 0 1 8.5 12 3.5 3.5 0 0 1 12 8.5a3.5 3.5 0 0 1 3.5 3.5 3.5 3.5 0 0 1-3.5 3.5m7.43-2.53c.04-.32.07-.64.07-.97s-.03-.66-.07-1l2.11-1.63c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.39-1.06-.73-1.69-.98l-.37-2.65A.506.506 0 0 0 14 2h-4c-.25 0-.46.18-.5.42l-.37 2.65c-.63.25-1.17.59-1.69.98l-2.49-1c-.22-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.57 11c-.04.34-.07.67-.07 1s.03.65.07.97l-2.11 1.66c-.19.15-.25.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1.01c.52.4 1.06.74 1.69.99l.37 2.65c.04.24.25.42.5.42h4c.25 0 .46-.18.5-.42l.37-2.65c.63-.26 1.17-.59 1.69-.99l2.49 1.01c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.66z"/></svg>
+                Display Settings
+            </h3>
+
+            <div class="settings-section">
+                <div class="settings-section-title">Appearance</div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Theme</div>
+                        <div class="setting-sublabel">Light or dark color scheme</div>
+                    </div>
+                    <div class="setting-control">
+                        <select id="theme" onchange="updateSetting('theme')">
+                            <option value="dark">Dark</option>
+                            <option value="light">Light</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="setting-control">
-                    <input type="range" id="linkOpacity" min="0" max="100" value="40" oninput="updateSetting('linkOpacity')">
-                    <span class="setting-value" id="linkOpacityVal">40%</span>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Link Opacity</div>
+                        <div class="setting-sublabel">Visibility of connection lines</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" id="linkOpacity" min="0" max="100" value="50" oninput="updateSetting('linkOpacity')">
+                        <span class="setting-value" id="linkOpacityVal">50%</span>
+                    </div>
                 </div>
-            </div>
-            <div class="setting-row">
-                <div>
-                    <div class="setting-label">Link Width</div>
-                    <div class="setting-sublabel">Thickness of connection lines</div>
-                </div>
-                <div class="setting-control">
-                    <input type="range" id="linkWidth" min="1" max="5" value="1" oninput="updateSetting('linkWidth')">
-                    <span class="setting-value" id="linkWidthVal">1px</span>
-                </div>
-            </div>
-            <div class="setting-row">
-                <div>
-                    <div class="setting-label">Node Size</div>
-                    <div class="setting-sublabel">Scale factor for node circles</div>
-                </div>
-                <div class="setting-control">
-                    <input type="range" id="nodeScale" min="50" max="200" value="100" oninput="updateSetting('nodeScale')">
-                    <span class="setting-value" id="nodeScaleVal">100%</span>
-                </div>
-            </div>
-            <div class="setting-row">
-                <div>
-                    <div class="setting-label">Weighted Nodes</div>
-                    <div class="setting-sublabel">Size nodes by connection count</div>
-                </div>
-                <div class="setting-control">
-                    <select id="weightedNodes" onchange="updateSetting('weightedNodes')">
-                        <option value="true">On</option>
-                        <option value="false" selected>Off</option>
-                    </select>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Link Width</div>
+                        <div class="setting-sublabel">Thickness of connection lines</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" id="linkWidth" min="1" max="5" value="1" oninput="updateSetting('linkWidth')">
+                        <span class="setting-value" id="linkWidthVal">1px</span>
+                    </div>
                 </div>
             </div>
-            <div class="setting-row">
-                <div>
-                    <div class="setting-label">Show Labels</div>
-                    <div class="setting-sublabel">Display node names</div>
+
+            <div class="settings-section">
+                <div class="settings-section-title">Nodes</div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Node Size</div>
+                        <div class="setting-sublabel">Scale factor for node circles</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" id="nodeScale" min="50" max="200" value="100" oninput="updateSetting('nodeScale')">
+                        <span class="setting-value" id="nodeScaleVal">100%</span>
+                    </div>
                 </div>
-                <div class="setting-control">
-                    <select id="showLabels" onchange="updateSetting('showLabels')">
-                        <option value="all">All</option>
-                        <option value="rpc">RPC Only</option>
-                        <option value="none">None</option>
-                    </select>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Weighted Nodes</div>
+                        <div class="setting-sublabel">Size by connection count</div>
+                    </div>
+                    <div class="setting-control">
+                        <select id="weightedNodes" onchange="updateSetting('weightedNodes')">
+                            <option value="true">On</option>
+                            <option value="false" selected>Off</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Show Labels</div>
+                        <div class="setting-sublabel">Display node names</div>
+                    </div>
+                    <div class="setting-control">
+                        <select id="showLabels" onchange="updateSetting('showLabels')">
+                            <option value="all">All</option>
+                            <option value="rpc">RPC Only</option>
+                            <option value="none">None</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-            <div class="setting-row">
-                <div>
-                    <div class="setting-label">Concurrent Connections</div>
-                    <div class="setting-sublabel">Number of parallel requests</div>
-                </div>
-                <div class="setting-control">
-                    <input type="range" id="concurrentConns" min="1" max="20" value="5" oninput="updateSetting('concurrentConns')">
-                    <span class="setting-value" id="concurrentConnsVal">5</span>
-                </div>
-            </div>
-            <div class="setting-row">
-                <div>
-                    <div class="setting-label">Auto Refresh</div>
-                    <div class="setting-sublabel">Periodically re-run discovery</div>
-                </div>
-                <div class="setting-control">
-                    <select id="autoRefresh" onchange="updateSetting('autoRefresh')">
-                        <option value="0">Off</option>
-                        <option value="60">1 minute</option>
-                        <option value="300">5 minutes</option>
-                        <option value="600">10 minutes</option>
-                        <option value="1800">30 minutes</option>
-                    </select>
+
+            <div class="settings-section">
+                <div class="settings-section-title">Layout</div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Layout Mode</div>
+                        <div class="setting-sublabel">How nodes are arranged</div>
+                    </div>
+                    <div class="setting-control">
+                        <select id="layoutMode" onchange="updateSetting('layoutMode')">
+                            <option value="force">Force-Directed</option>
+                            <option value="radial">Radial</option>
+                            <option value="cluster">By Organization</option>
+                        </select>
+                    </div>
                 </div>
             </div>
+
+            <div class="settings-section">
+                <div class="settings-section-title">Discovery</div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Concurrent Connections</div>
+                        <div class="setting-sublabel">Parallel request limit</div>
+                    </div>
+                    <div class="setting-control">
+                        <input type="range" id="concurrentConns" min="1" max="20" value="5" oninput="updateSetting('concurrentConns')">
+                        <span class="setting-value" id="concurrentConnsVal">5</span>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Auto Refresh</div>
+                        <div class="setting-sublabel">Periodic re-discovery</div>
+                    </div>
+                    <div class="setting-control">
+                        <select id="autoRefresh" onchange="updateSetting('autoRefresh')">
+                            <option value="0">Off</option>
+                            <option value="60">1 minute</option>
+                            <option value="300">5 minutes</option>
+                            <option value="600">10 minutes</option>
+                            <option value="1800">30 minutes</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div class="btn-row">
-                <button onclick="closeSettings()" style="background: #21262d;">Close</button>
-                <button onclick="applySettings()">Apply</button>
+                <button onclick="closeSettings()" class="btn-secondary">Cancel</button>
+                <button onclick="applySettings()">Apply Changes</button>
             </div>
         </div>
     </div>
 
     <div id="container">
         <div id="sidebar">
-            <h1>DCL Network Explorer</h1>
+            <div class="header">
+                <div class="header-icon">
+                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                </div>
+                <div>
+                    <h1>DCL Network Explorer</h1>
+                    <div class="header-subtitle">Distributed Compliance Ledger</div>
+                </div>
+            </div>
             <div class="section">
                 <h2>Seed Nodes</h2>
                 <textarea id="seedNodes" class="seed-input" rows="3">https://on.dcl.csa-iot.org:26657
 http://13.52.115.12:26657
 http://54.183.6.67:26657</textarea>
-                <button id="startBtn" onclick="startDiscovery()" style="margin-top: 8px;">Start Discovery</button>
-                <div style="margin-top: 8px; font-size: 11px; color: #8b949e;">
-                    Uses Vercel serverless proxy for HTTP endpoints.
+                <div class="button-group">
+                    <button id="startBtn" onclick="startDiscovery()">
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="margin-right: 4px;"><path d="M8 5v14l11-7z"/></svg>
+                        Start Discovery
+                    </button>
+                    <input type="file" id="loadJson" accept=".json" onchange="loadJsonFile(event)" style="display:none">
+                    <button onclick="document.getElementById('loadJson').click()" class="btn-secondary">Load JSON</button>
+                    <button id="continueBtn" onclick="continueDiscovery()" class="btn-primary-alt" style="display: none;">Continue Discovery</button>
                 </div>
-                <input type="file" id="loadJson" accept=".json" onchange="loadJsonFile(event)" style="display:none">
-                <button onclick="document.getElementById('loadJson').click()" style="margin-top: 8px; background: #21262d;">Load JSON</button>
-                <button id="continueBtn" onclick="continueDiscovery()" style="margin-top: 8px; background: #1f6feb; display: none;">Continue Discovery</button>
+                <div class="helper-text">
+                    <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    Uses Vercel serverless proxy for HTTP endpoints
+                </div>
             </div>
             <div class="section">
                 <h2>Statistics</h2>
@@ -326,11 +684,11 @@ http://54.183.6.67:26657</textarea>
             <div class="section">
                 <h2>Legend</h2>
                 <div class="legend">
-                    <div class="legend-item"><div class="legend-dot" style="background:#f97583"></div> Validator</div>
-                    <div class="legend-item"><div class="legend-dot" style="background:#56d364"></div> Sentry</div>
-                    <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div> Observer</div>
-                    <div class="legend-item"><div class="legend-dot" style="background:#d29922"></div> Seed</div>
-                    <div class="legend-item"><div class="legend-dot" style="background:#8b949e"></div> Unknown</div>
+                    <div class="legend-item"><div class="legend-dot" style="background: linear-gradient(135deg, #f97583, #ff7b72)"></div> Validator</div>
+                    <div class="legend-item"><div class="legend-dot" style="background: linear-gradient(135deg, #56d364, #3fb950)"></div> Sentry</div>
+                    <div class="legend-item"><div class="legend-dot" style="background: linear-gradient(135deg, #58a6ff, #388bfd)"></div> Observer</div>
+                    <div class="legend-item"><div class="legend-dot" style="background: linear-gradient(135deg, #d29922, #e3b341)"></div> Seed</div>
+                    <div class="legend-item"><div class="legend-dot" style="background: linear-gradient(135deg, #8b949e, #6e7681)"></div> Unknown</div>
                 </div>
             </div>
             <div class="section" style="flex-shrink: 0;">
@@ -341,27 +699,42 @@ http://54.183.6.67:26657</textarea>
         <div id="graph">
             <svg></svg>
             <div id="node-info"></div>
+            <div id="watermark">DCL Network Explorer - dcl-probe.vercel.app</div>
             <div id="controls">
-                <button onclick="zoomIn()">Zoom +</button>
-                <button onclick="zoomOut()">Zoom -</button>
-                <button onclick="resetZoom()">Reset</button>
-                <button onclick="exportData()">Export JSON</button>
-                <button onclick="openSettings()">Settings</button>
+                <button onclick="zoomIn()">
+                    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                    Zoom In
+                </button>
+                <button onclick="zoomOut()">
+                    <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
+                    Zoom Out
+                </button>
+                <button onclick="resetZoom()">
+                    <svg viewBox="0 0 24 24"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                    Reset
+                </button>
+                <button onclick="exportData()">
+                    <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                    Export JSON
+                </button>
+                <button onclick="exportPDF()">
+                    <svg viewBox="0 0 24 24"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/></svg>
+                    Export PDF
+                </button>
+                <button onclick="openSettings()">
+                    <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg>
+                    Settings
+                </button>
             </div>
         </div>
     </div>
 
     <script>
         const TIMEOUT = 10000;
-
-        // Vercel Edge Function CORS Proxy (update with your Vercel URL)
         const CORS_PROXY = "/api/proxy?apiurl=";
 
         function proxyUrl(url) {
-            // HTTPS endpoints with CORS don't need proxy
-            if (url.startsWith("https://on.dcl.csa-iot.org")) {
-                return url;
-            }
+            if (url.startsWith("https://on.dcl.csa-iot.org")) return url;
             return CORS_PROXY + encodeURIComponent(url);
         }
 
@@ -373,9 +746,17 @@ http://54.183.6.67:26657</textarea>
             unknown: "#8b949e"
         };
 
+        const typeBadgeColors = {
+            validator: { bg: "rgba(249, 117, 131, 0.2)", color: "#f97583" },
+            sentry: { bg: "rgba(86, 211, 100, 0.2)", color: "#56d364" },
+            observer: { bg: "rgba(88, 166, 255, 0.2)", color: "#58a6ff" },
+            seed: { bg: "rgba(210, 153, 34, 0.2)", color: "#d29922" },
+            unknown: { bg: "rgba(139, 148, 158, 0.2)", color: "#8b949e" }
+        };
+
         // State
-        let nodes = {};        // id -> node info
-        let edges = [];        // [{source, target}]
+        let nodes = {};
+        let edges = [];
         let edgeSet = new Set();
         let visitedRpcs = new Set();
         let discoveryQueue = [];
@@ -415,8 +796,6 @@ http://54.183.6.67:26657</textarea>
             entry.textContent = `[${time}] ${msg}`;
             logEl.appendChild(entry);
             logEl.scrollTop = logEl.scrollHeight;
-
-            // Keep only last 100 entries
             while (logEl.children.length > 100) {
                 logEl.removeChild(logEl.firstChild);
             }
@@ -477,9 +856,7 @@ http://54.183.6.67:26657</textarea>
         function addNode(id, ip, moniker, version, rpcAccessible = false, dclVersion = null, height = null) {
             if (!nodes[id]) {
                 nodes[id] = {
-                    id,
-                    ip,
-                    port: 26656,
+                    id, ip, port: 26656,
                     moniker: moniker || "unknown",
                     tendermint_version: version || "unknown",
                     rpc_accessible: rpcAccessible,
@@ -508,55 +885,38 @@ http://54.183.6.67:26657</textarea>
         async function discoverFromNode(sourceId, rpcUrl) {
             if (visitedRpcs.has(rpcUrl)) return [];
             visitedRpcs.add(rpcUrl);
-
             const peers = await queryNetInfo(rpcUrl);
             const newPeers = [];
-
             for (const peer of peers) {
                 const nodeInfo = peer.node_info || {};
                 const peerId = nodeInfo.id;
                 const remoteIp = peer.remote_ip;
-
                 if (!peerId || !remoteIp) continue;
                 if (isPrivateIP(remoteIp)) continue;
-
                 const isNew = !nodes[peerId];
                 addNode(peerId, remoteIp, nodeInfo.moniker, nodeInfo.version);
-
-                if (sourceId) {
-                    addEdge(sourceId, peerId);
-                }
-
-                if (isNew) {
-                    newPeers.push(peerId);
-                }
+                if (sourceId) addEdge(sourceId, peerId);
+                if (isNew) newPeers.push(peerId);
             }
-
             return newPeers;
         }
 
         async function crawlNode(peerId) {
             const node = nodes[peerId];
             if (!node) return;
-
             const rpcUrl = node.rpc_url;
             log(`Crawling ${node.moniker} (${node.ip})`);
-
-            // Check RPC accessibility
             const status = await queryStatus(rpcUrl);
             if (status) {
                 const dclVersion = await queryAbciInfo(rpcUrl);
                 addNode(peerId, node.ip, node.moniker, node.tendermint_version, true, dclVersion, status.height);
                 log(`  RPC accessible, DCL v${dclVersion || "?"}`, "success");
             }
-
-            // Discover peers
             const newPeers = await discoverFromNode(peerId, rpcUrl);
             if (newPeers.length > 0) {
                 log(`  Found ${newPeers.length} new peers`);
                 discoveryQueue.push(...newPeers);
             }
-
             node._discovered = true;
             updateGraph();
             updateStats();
@@ -564,26 +924,18 @@ http://54.183.6.67:26657</textarea>
 
         async function startDiscovery() {
             if (isDiscovering) return;
-
-            // Reset state
             nodes = {};
             edges = [];
             edgeSet.clear();
             visitedRpcs.clear();
             discoveryQueue = [];
             isDiscovering = true;
-
             document.getElementById("startBtn").disabled = true;
-            document.getElementById("startBtn").textContent = "Discovering...";
+            document.getElementById("startBtn").innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="margin-right: 4px; animation: spin 1s linear infinite;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> Discovering...';
             document.getElementById("log").innerHTML = "";
-
             log("Starting peer discovery...");
-
-            // Parse seed nodes
             const seedText = document.getElementById("seedNodes").value;
             const seedUrls = seedText.split("\n").map(s => s.trim()).filter(s => s);
-
-            // Query seed nodes first
             for (const rpcUrl of seedUrls) {
                 log(`Querying seed: ${rpcUrl}`);
                 const status = await queryStatus(rpcUrl);
@@ -591,7 +943,6 @@ http://54.183.6.67:26657</textarea>
                     const dclVersion = await queryAbciInfo(rpcUrl);
                     const ip = rpcUrl.replace(/https?:\/\//, "").split(":")[0];
                     addNode(status.id, ip, status.moniker, status.version, true, dclVersion, status.height);
-
                     const newPeers = await discoverFromNode(status.id, rpcUrl);
                     log(`  Found ${newPeers.length} peers`, "success");
                     discoveryQueue.push(...newPeers);
@@ -602,22 +953,16 @@ http://54.183.6.67:26657</textarea>
                 updateGraph();
                 updateStats();
             }
-
             log(`Initial discovery: ${Object.keys(nodes).length} nodes`);
-
-            // Process queue
             while (discoveryQueue.length > 0) {
                 const batch = discoveryQueue.splice(0, settings.concurrentConns);
                 await Promise.all(batch.map(peerId => {
-                    if (!nodes[peerId]?._discovered) {
-                        return crawlNode(peerId);
-                    }
+                    if (!nodes[peerId]?._discovered) return crawlNode(peerId);
                 }));
             }
-
             isDiscovering = false;
             document.getElementById("startBtn").disabled = false;
-            document.getElementById("startBtn").textContent = "Restart Discovery";
+            document.getElementById("startBtn").innerHTML = '<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" style="margin-right: 4px;"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg> Restart Discovery';
             log(`Discovery complete: ${Object.keys(nodes).length} nodes, ${edges.length} connections`, "success");
         }
 
@@ -626,29 +971,21 @@ http://54.183.6.67:26657</textarea>
             svg = d3.select("svg");
             const width = svg.node().parentElement.clientWidth;
             const height = svg.node().parentElement.clientHeight;
-
             zoom = d3.zoom()
                 .scaleExtent([0.1, 4])
                 .on("zoom", (event) => g.attr("transform", event.transform));
-
             svg.call(zoom)
                .on("click", (event) => {
-                   // Clear selection when clicking on background (not on a node)
-                   if (event.target.tagName === "svg") {
-                       clearSelection();
-                   }
+                   if (event.target.tagName === "svg") clearSelection();
                });
             g = svg.append("g");
-
             linkGroup = g.append("g").attr("class", "links");
             nodeGroup = g.append("g").attr("class", "nodes");
-
             simulation = d3.forceSimulation()
-                .force("link", d3.forceLink().id(d => d.id).distance(80))
-                .force("charge", d3.forceManyBody().strength(-200))
+                .force("link", d3.forceLink().id(d => d.id).distance(100))
+                .force("charge", d3.forceManyBody().strength(-300))
                 .force("center", d3.forceCenter(width / 2, height / 2))
-                .force("collision", d3.forceCollide().radius(30));
-
+                .force("collision", d3.forceCollide().radius(40));
             simulation.on("tick", () => {
                 linkGroup.selectAll("line")
                     .attr("x1", d => d.source.x || 0)
@@ -658,7 +995,6 @@ http://54.183.6.67:26657</textarea>
                     .style("visibility", d =>
                         (d.source.x !== undefined && d.target.x !== undefined) ? "visible" : "hidden"
                     );
-
                 nodeGroup.selectAll("g.node")
                     .attr("transform", d => `translate(${d.x || 0},${d.y || 0})`);
             });
@@ -666,14 +1002,13 @@ http://54.183.6.67:26657</textarea>
 
         function updateGraph() {
             const nodeArray = Object.values(nodes);
-            // Handle both string IDs and object references (D3 mutates edges)
             const validEdges = edges.filter(e => {
                 const srcId = typeof e.source === 'object' ? e.source.id : e.source;
                 const tgtId = typeof e.target === 'object' ? e.target.id : e.target;
                 return nodes[srcId] && nodes[tgtId];
             });
 
-            // Calculate node degrees (connection count)
+            // Calculate node degrees
             const nodeDegrees = {};
             edges.forEach(e => {
                 const srcId = typeof e.source === 'object' ? e.source.id : e.source;
@@ -683,12 +1018,10 @@ http://54.183.6.67:26657</textarea>
             });
             const maxDegree = Math.max(...Object.values(nodeDegrees), 1);
 
-            // Helper to calculate node radius
             function getNodeRadius(d) {
-                const baseSize = d.rpc_accessible ? 12 : 8;
+                const baseSize = d.rpc_accessible ? 14 : 10;
                 if (!settings.weightedNodes) return baseSize;
                 const degree = nodeDegrees[d.id] || 0;
-                // Scale from 1x to 2.5x based on degree
                 const scale = 1 + (degree / maxDegree) * 1.5;
                 return baseSize * scale;
             }
@@ -721,28 +1054,71 @@ http://54.183.6.67:26657</textarea>
                 .attr("fill", d => typeColors[d.type] || typeColors.unknown);
 
             nodeEnter.append("text")
-                .attr("dy", d => getNodeRadius(d) * (settings.nodeScale / 100) + 8)
+                .attr("dy", d => getNodeRadius(d) * (settings.nodeScale / 100) + 14)
                 .attr("text-anchor", "middle")
-                .text(d => d.moniker.length > 15 ? d.moniker.slice(0, 15) + "..." : d.moniker);
+                .text(d => d.moniker.length > 18 ? d.moniker.slice(0, 18) + "..." : d.moniker);
 
-            // Update existing nodes
+            // Update existing
             nodeGroup.selectAll("g.node circle")
                 .attr("r", d => getNodeRadius(d) * (settings.nodeScale / 100))
                 .attr("fill", d => typeColors[d.type] || typeColors.unknown);
 
             nodeGroup.selectAll("g.node text")
-                .attr("dy", d => getNodeRadius(d) * (settings.nodeScale / 100) + 8);
+                .attr("dy", d => getNodeRadius(d) * (settings.nodeScale / 100) + 14);
 
-            // Update simulation
+            // Apply layout
+            applyLayout();
+
             simulation.nodes(nodeArray);
             simulation.force("link").links(validEdges);
             simulation.alpha(0.3).restart();
         }
 
+        function applyLayout() {
+            const width = svg.node().parentElement.clientWidth;
+            const height = svg.node().parentElement.clientHeight;
+            const nodeArray = Object.values(nodes);
+
+            if (settings.layoutMode === 'radial') {
+                // Radial layout - validators in center, others in rings
+                const types = ['validator', 'sentry', 'observer', 'seed', 'unknown'];
+                const ringRadius = Math.min(width, height) / 4;
+                types.forEach((type, ringIndex) => {
+                    const typeNodes = nodeArray.filter(n => n.type === type);
+                    typeNodes.forEach((n, i) => {
+                        const angle = (2 * Math.PI * i) / typeNodes.length;
+                        const r = ringRadius * (ringIndex + 1) / types.length;
+                        n.x = width / 2 + r * Math.cos(angle);
+                        n.y = height / 2 + r * Math.sin(angle);
+                    });
+                });
+                simulation.force("center", null);
+            } else if (settings.layoutMode === 'cluster') {
+                // Group by organization
+                const orgs = [...new Set(nodeArray.map(n => n.org))];
+                const cols = Math.ceil(Math.sqrt(orgs.length));
+                const cellW = width / cols;
+                const cellH = height / Math.ceil(orgs.length / cols);
+                orgs.forEach((org, i) => {
+                    const col = i % cols;
+                    const row = Math.floor(i / cols);
+                    const orgNodes = nodeArray.filter(n => n.org === org);
+                    orgNodes.forEach((n, j) => {
+                        const angle = (2 * Math.PI * j) / orgNodes.length;
+                        const r = Math.min(cellW, cellH) / 4;
+                        n.x = cellW * col + cellW / 2 + r * Math.cos(angle);
+                        n.y = cellH * row + cellH / 2 + r * Math.sin(angle);
+                    });
+                });
+                simulation.force("center", null);
+            } else {
+                simulation.force("center", d3.forceCenter(width / 2, height / 2));
+            }
+        }
+
         function updateStats() {
             const nodeArray = Object.values(nodes);
             const orgs = new Set(nodeArray.map(n => n.org));
-
             document.getElementById("nodeCount").textContent = nodeArray.length;
             document.getElementById("edgeCount").textContent = edges.length;
             document.getElementById("rpcCount").textContent = nodeArray.filter(n => n.rpc_accessible).length;
@@ -750,29 +1126,28 @@ http://54.183.6.67:26657</textarea>
         }
 
         function showNodeInfo(event, d) {
-            // Calculate connections for this node
             let connectionCount = 0;
             edges.forEach(e => {
                 const srcId = typeof e.source === 'object' ? e.source.id : e.source;
                 const tgtId = typeof e.target === 'object' ? e.target.id : e.target;
                 if (srcId === d.id || tgtId === d.id) connectionCount++;
             });
-
-            // Persistently highlight this node's connections
             highlightConnections(event, d, true);
-
+            const badge = typeBadgeColors[d.type] || typeBadgeColors.unknown;
             const info = document.getElementById("node-info");
             info.style.display = "block";
             info.innerHTML = `
-                <h3>${d.moniker}</h3>
-                <div class="row"><span class="label">Type</span><span class="value">${d.type}</span></div>
+                <h3>
+                    ${d.moniker}
+                    <span class="type-badge" style="background: ${badge.bg}; color: ${badge.color}">${d.type}</span>
+                </h3>
                 <div class="row"><span class="label">Organization</span><span class="value">${d.org}</span></div>
                 <div class="row"><span class="label">Connections</span><span class="value">${connectionCount}</span></div>
-                <div class="row"><span class="label">IP</span><span class="value">${d.ip}</span></div>
-                <div class="row"><span class="label">ID</span><span class="value" style="font-size:10px">${d.id}</span></div>
+                <div class="row"><span class="label">IP Address</span><span class="value">${d.ip}</span></div>
+                <div class="row"><span class="label">Node ID</span><span class="value" style="font-size:10px">${d.id}</span></div>
                 <div class="row"><span class="label">RPC Accessible</span><span class="value">${d.rpc_accessible ? "Yes" : "No"}</span></div>
                 <div class="row"><span class="label">DCL Version</span><span class="value">${d.dcl_version || "N/A"}</span></div>
-                <div class="row"><span class="label">Height</span><span class="value">${d.height || "N/A"}</span></div>
+                <div class="row"><span class="label">Block Height</span><span class="value">${d.height || "N/A"}</span></div>
                 <div class="row"><span class="label">Tendermint</span><span class="value">${d.tendermint_version}</span></div>
             `;
         }
@@ -780,11 +1155,8 @@ http://54.183.6.67:26657</textarea>
         let selectedNodeId = null;
 
         function highlightConnections(event, d, persistent = false) {
-            if (persistent) {
-                selectedNodeId = d.id;
-            }
+            if (persistent) selectedNodeId = d.id;
             const connectedIds = new Set([d.id]);
-
             linkGroup.selectAll("line").classed("highlighted", l => {
                 const srcId = typeof l.source === "object" ? l.source.id : l.source;
                 const tgtId = typeof l.target === "object" ? l.target.id : l.target;
@@ -795,12 +1167,10 @@ http://54.183.6.67:26657</textarea>
                 }
                 return false;
             });
-
             nodeGroup.selectAll("g.node").classed("highlighted", n => connectedIds.has(n.id));
         }
 
         function clearHighlight() {
-            // Don't clear if we have a selected node - restore its highlight
             if (selectedNodeId && nodes[selectedNodeId]) {
                 highlightConnections(null, nodes[selectedNodeId], false);
             } else {
@@ -838,16 +1208,11 @@ http://54.183.6.67:26657</textarea>
         function resetZoom() { svg.transition().call(zoom.transform, d3.zoomIdentity); }
 
         function exportData() {
-            // Normalize edges to use string IDs (D3 mutates them to object refs)
             const normalizedEdges = edges.map(e => ({
                 source: typeof e.source === 'object' ? e.source.id : e.source,
                 target: typeof e.target === 'object' ? e.target.id : e.target
             }));
-            const data = {
-                nodes,
-                edges: normalizedEdges,
-                exported_at: new Date().toISOString()
-            };
+            const data = { nodes, edges: normalizedEdges, exported_at: new Date().toISOString() };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -857,22 +1222,74 @@ http://54.183.6.67:26657</textarea>
             URL.revokeObjectURL(url);
         }
 
+        async function exportPDF() {
+            document.getElementById("export-overlay").style.display = "flex";
+            document.getElementById("watermark").style.display = "block";
+            document.getElementById("controls").style.display = "none";
+            document.getElementById("node-info").style.display = "none";
+
+            await new Promise(r => setTimeout(r, 100));
+
+            try {
+                const graphEl = document.getElementById("graph");
+                const canvas = await html2canvas(graphEl, {
+                    backgroundColor: getComputedStyle(document.body).getPropertyValue('--graph-bg'),
+                    scale: 2
+                });
+
+                const { jsPDF } = window.jspdf;
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF({
+                    orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+                    unit: 'px',
+                    format: [canvas.width, canvas.height]
+                });
+
+                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+
+                // Add metadata page
+                pdf.addPage();
+                pdf.setFontSize(24);
+                pdf.text('DCL Network Report', 40, 50);
+                pdf.setFontSize(12);
+                pdf.text(`Generated: ${new Date().toLocaleString()}`, 40, 80);
+                pdf.text(`Total Nodes: ${Object.keys(nodes).length}`, 40, 100);
+                pdf.text(`Total Connections: ${edges.length}`, 40, 120);
+                pdf.text(`RPC Accessible: ${Object.values(nodes).filter(n => n.rpc_accessible).length}`, 40, 140);
+                pdf.text(`Organizations: ${new Set(Object.values(nodes).map(n => n.org)).size}`, 40, 160);
+
+                // Node type breakdown
+                pdf.text('Node Types:', 40, 200);
+                const typeCounts = {};
+                Object.values(nodes).forEach(n => {
+                    typeCounts[n.type] = (typeCounts[n.type] || 0) + 1;
+                });
+                let y = 220;
+                for (const [type, count] of Object.entries(typeCounts)) {
+                    pdf.text(`  ${type}: ${count}`, 40, y);
+                    y += 20;
+                }
+
+                pdf.save(`dcl-network-${new Date().toISOString().slice(0,10)}.pdf`);
+                log('PDF exported successfully', 'success');
+            } catch (err) {
+                log(`PDF export failed: ${err.message}`, 'error');
+            }
+
+            document.getElementById("export-overlay").style.display = "none";
+            document.getElementById("watermark").style.display = "none";
+            document.getElementById("controls").style.display = "flex";
+        }
+
         function loadJsonFile(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
                     const data = JSON.parse(e.target.result);
-
-                    // Reset state
                     nodes = data.nodes || {};
-                    // Clear _discovered flag so nodes can be re-crawled
-                    Object.values(nodes).forEach(n => {
-                        delete n._discovered;
-                    });
-                    // Normalize edges to ensure they're fresh objects with string IDs
+                    Object.values(nodes).forEach(n => { delete n._discovered; });
                     edges = (data.edges || []).map(e => ({
                         source: typeof e.source === 'object' ? e.source.id : e.source,
                         target: typeof e.target === 'object' ? e.target.id : e.target
@@ -883,15 +1300,10 @@ http://54.183.6.67:26657</textarea>
                         const key = [e.source, e.target].sort().join("-");
                         edgeSet.add(key);
                     });
-
-                    // Count RPC-accessible nodes for potential discovery
                     const rpcNodes = Object.values(nodes).filter(n => n.rpc_accessible);
                     log(`Loaded ${Object.keys(nodes).length} nodes, ${edges.length} edges from file`, "success");
                     log(`${rpcNodes.length} RPC-accessible nodes available for discovery`);
-
-                    // Show continue discovery button if there are RPC-accessible nodes
                     document.getElementById('continueBtn').style.display = rpcNodes.length > 0 ? 'block' : 'none';
-
                     updateGraph();
                     updateStats();
                 } catch (err) {
@@ -903,36 +1315,23 @@ http://54.183.6.67:26657</textarea>
 
         async function continueDiscovery() {
             if (isDiscovering) return;
-
             isDiscovering = true;
             document.getElementById("continueBtn").disabled = true;
             document.getElementById("continueBtn").textContent = "Discovering...";
             document.getElementById("startBtn").disabled = true;
-
             log("Continuing discovery from loaded nodes...");
-
-            // Queue all RPC-accessible nodes that haven't been fully discovered
             const rpcNodes = Object.values(nodes).filter(n => n.rpc_accessible && !n._discovered);
             discoveryQueue = rpcNodes.map(n => n.id);
-
             log(`Queued ${discoveryQueue.length} RPC-accessible nodes for crawling`);
-
-            // Also try to crawl nodes that weren't marked as RPC accessible (they might be now)
             const nonRpcNodes = Object.values(nodes).filter(n => !n.rpc_accessible && !n._discovered);
             discoveryQueue.push(...nonRpcNodes.map(n => n.id));
-
             log(`Total ${discoveryQueue.length} nodes queued (including ${nonRpcNodes.length} previously inaccessible)`);
-
-            // Process queue
             while (discoveryQueue.length > 0) {
                 const batch = discoveryQueue.splice(0, settings.concurrentConns);
                 await Promise.all(batch.map(peerId => {
-                    if (!nodes[peerId]?._discovered) {
-                        return crawlNode(peerId);
-                    }
+                    if (!nodes[peerId]?._discovered) return crawlNode(peerId);
                 }));
             }
-
             isDiscovering = false;
             document.getElementById("continueBtn").disabled = false;
             document.getElementById("continueBtn").textContent = "Continue Discovery";
@@ -942,11 +1341,13 @@ http://54.183.6.67:26657</textarea>
 
         // Settings
         let settings = {
-            linkOpacity: 40,
+            theme: 'dark',
+            linkOpacity: 50,
             linkWidth: 1,
             nodeScale: 100,
             weightedNodes: false,
             showLabels: 'all',
+            layoutMode: 'force',
             concurrentConns: 5,
             autoRefresh: 0
         };
@@ -954,7 +1355,7 @@ http://54.183.6.67:26657</textarea>
 
         function openSettings() {
             document.getElementById('settings-overlay').style.display = 'flex';
-            // Load current settings
+            document.getElementById('theme').value = settings.theme;
             document.getElementById('linkOpacity').value = settings.linkOpacity;
             document.getElementById('linkOpacityVal').textContent = settings.linkOpacity + '%';
             document.getElementById('linkWidth').value = settings.linkWidth;
@@ -963,6 +1364,7 @@ http://54.183.6.67:26657</textarea>
             document.getElementById('nodeScaleVal').textContent = settings.nodeScale + '%';
             document.getElementById('weightedNodes').value = settings.weightedNodes ? 'true' : 'false';
             document.getElementById('showLabels').value = settings.showLabels;
+            document.getElementById('layoutMode').value = settings.layoutMode;
             document.getElementById('concurrentConns').value = settings.concurrentConns;
             document.getElementById('concurrentConnsVal').textContent = settings.concurrentConns;
             document.getElementById('autoRefresh').value = settings.autoRefresh;
@@ -987,20 +1389,25 @@ http://54.183.6.67:26657</textarea>
         }
 
         function applySettings() {
+            settings.theme = document.getElementById('theme').value;
             settings.linkOpacity = parseInt(document.getElementById('linkOpacity').value);
             settings.linkWidth = parseInt(document.getElementById('linkWidth').value);
             settings.nodeScale = parseInt(document.getElementById('nodeScale').value);
             settings.weightedNodes = document.getElementById('weightedNodes').value === 'true';
             settings.showLabels = document.getElementById('showLabels').value;
+            settings.layoutMode = document.getElementById('layoutMode').value;
             settings.concurrentConns = parseInt(document.getElementById('concurrentConns').value);
             settings.autoRefresh = parseInt(document.getElementById('autoRefresh').value);
+
+            // Apply theme
+            document.body.setAttribute('data-theme', settings.theme);
 
             // Apply link styles
             linkGroup.selectAll("line")
                 .style("stroke-opacity", settings.linkOpacity / 100)
                 .style("stroke-width", settings.linkWidth + "px");
 
-            // Re-render graph to apply node size and weighting
+            // Re-render graph
             updateGraph();
 
             // Apply label visibility
@@ -1011,7 +1418,7 @@ http://54.183.6.67:26657</textarea>
                     return 'block';
                 });
 
-            // Setup auto-refresh
+            // Auto-refresh
             if (autoRefreshTimer) {
                 clearInterval(autoRefreshTimer);
                 autoRefreshTimer = null;
@@ -1033,11 +1440,12 @@ http://54.183.6.67:26657</textarea>
         // Initialize
         initGraph();
 
-        // Handle resize
         window.addEventListener("resize", () => {
             const width = svg.node().parentElement.clientWidth;
             const height = svg.node().parentElement.clientHeight;
-            simulation.force("center", d3.forceCenter(width / 2, height / 2));
+            if (settings.layoutMode === 'force') {
+                simulation.force("center", d3.forceCenter(width / 2, height / 2));
+            }
             simulation.alpha(0.1).restart();
         });
     </script>
