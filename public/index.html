@@ -1258,18 +1258,39 @@ http://54.183.6.67:26657</textarea>
                 const graphEl = document.getElementById("graph");
                 const canvas = await html2canvas(graphEl, {
                     backgroundColor: getComputedStyle(document.body).getPropertyValue('--graph-bg'),
-                    scale: 2
+                    scale: 1
                 });
 
                 const { jsPDF } = window.jspdf;
-                const imgData = canvas.toDataURL('image/png');
+                // Use JPEG with compression instead of PNG
+                const imgData = canvas.toDataURL('image/jpeg', 0.8);
+
+                // Use standard page size instead of canvas size
                 const pdf = new jsPDF({
-                    orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
-                    unit: 'px',
-                    format: [canvas.width, canvas.height]
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
                 });
 
-                pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+                // Calculate dimensions to fit A4 landscape
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const imgRatio = canvas.width / canvas.height;
+                const pageRatio = pageWidth / pageHeight;
+
+                let imgWidth, imgHeight;
+                if (imgRatio > pageRatio) {
+                    imgWidth = pageWidth - 20;
+                    imgHeight = imgWidth / imgRatio;
+                } else {
+                    imgHeight = pageHeight - 20;
+                    imgWidth = imgHeight * imgRatio;
+                }
+
+                const x = (pageWidth - imgWidth) / 2;
+                const y = (pageHeight - imgHeight) / 2;
+
+                pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
 
                 // Add metadata page
                 pdf.addPage();
