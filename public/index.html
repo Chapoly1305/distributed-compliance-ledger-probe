@@ -1311,15 +1311,30 @@ http://54.183.6.67:26657</textarea>
                 pdf.text(`RPC Accessible: ${Object.values(nodes).filter(n => n.rpc_accessible).length}`, 40, 140);
                 pdf.text(`Organizations: ${new Set(Object.values(nodes).map(n => n.org)).size}`, 40, 160);
 
-                // Node type breakdown
+                // Node type breakdown with legend
                 pdf.text('Node Types:', 40, 200);
                 const typeCounts = {};
                 Object.values(nodes).forEach(n => {
                     typeCounts[n.type] = (typeCounts[n.type] || 0) + 1;
                 });
+
+                const legendColors = {
+                    validator: [249, 117, 131],
+                    sentry: [86, 211, 100],
+                    observer: [88, 166, 255],
+                    seed: [210, 153, 34],
+                    unknown: [139, 148, 158]
+                };
+
                 let textY = 220;
                 for (const [type, count] of Object.entries(typeCounts)) {
-                    pdf.text(`  ${type}: ${count}`, 40, textY);
+                    // Draw colored circle
+                    const color = legendColors[type] || legendColors.unknown;
+                    pdf.setFillColor(color[0], color[1], color[2]);
+                    pdf.circle(48, textY - 3, 4, 'F');
+                    // Draw text
+                    pdf.setTextColor(0, 0, 0);
+                    pdf.text(`${type}: ${count}`, 58, textY);
                     textY += 20;
                 }
 
