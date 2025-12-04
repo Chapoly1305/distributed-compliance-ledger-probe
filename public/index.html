@@ -1451,8 +1451,11 @@ http://54.183.6.67:26657</textarea>
                 .style("stroke-opacity", settings.linkOpacity / 100)
                 .style("stroke-width", settings.linkWidth + "px");
 
-            // Re-render graph
+            // Re-render graph and reset view to center
             updateGraph();
+
+            // Reset zoom/pan to center the graph after layout change
+            svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
 
             // Apply label visibility
             nodeGroup.selectAll("g.node text")
