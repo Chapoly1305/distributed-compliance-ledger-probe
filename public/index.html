@@ -1266,58 +1266,47 @@ http://54.183.6.67:26657</textarea>
                 const graphEl = document.getElementById("graph");
                 const canvas = await html2canvas(graphEl, {
                     backgroundColor: getComputedStyle(document.body).getPropertyValue('--graph-bg'),
-                    scale: 1
+                    scale: 2  // Higher quality
                 });
 
                 const { jsPDF } = window.jspdf;
-                // Use JPEG with compression instead of PNG
-                const imgData = canvas.toDataURL('image/jpeg', 0.8);
+                // Use PNG for better quality
+                const imgData = canvas.toDataURL('image/png');
 
-                // Use standard page size instead of canvas size
+                // Use standard page size
                 const pdf = new jsPDF({
                     orientation: 'landscape',
                     unit: 'mm',
-                    format: 'a4'
+                    format: 'a4',
+                    compress: true
                 });
 
-                // Calculate dimensions to fit A4 landscape
                 const pageWidth = pdf.internal.pageSize.getWidth();
                 const pageHeight = pdf.internal.pageSize.getHeight();
+
+                // Leave space for legend at bottom
+                const legendHeight = 25;
+                const graphAreaHeight = pageHeight - legendHeight - 15;
+
                 const imgRatio = canvas.width / canvas.height;
-                const pageRatio = pageWidth / pageHeight;
+                const graphAreaRatio = (pageWidth - 20) / graphAreaHeight;
 
                 let imgWidth, imgHeight;
-                if (imgRatio > pageRatio) {
+                if (imgRatio > graphAreaRatio) {
                     imgWidth = pageWidth - 20;
                     imgHeight = imgWidth / imgRatio;
                 } else {
-                    imgHeight = pageHeight - 20;
+                    imgHeight = graphAreaHeight;
                     imgWidth = imgHeight * imgRatio;
                 }
 
                 const x = (pageWidth - imgWidth) / 2;
-                const y = (pageHeight - imgHeight) / 2;
+                const y = 10;
 
-                pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+                pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
 
-                // Add metadata page
-                pdf.addPage();
-                pdf.setFontSize(24);
-                pdf.text('DCL Network Report', 40, 50);
-                pdf.setFontSize(12);
-                pdf.text(`Generated: ${new Date().toLocaleString()}`, 40, 80);
-                pdf.text(`Total Nodes: ${Object.keys(nodes).length}`, 40, 100);
-                pdf.text(`Total Connections: ${edges.length}`, 40, 120);
-                pdf.text(`RPC Accessible: ${Object.values(nodes).filter(n => n.rpc_accessible).length}`, 40, 140);
-                pdf.text(`Organizations: ${new Set(Object.values(nodes).map(n => n.org)).size}`, 40, 160);
-
-                // Node type breakdown with legend
-                pdf.text('Node Types:', 40, 200);
-                const typeCounts = {};
-                Object.values(nodes).forEach(n => {
-                    typeCounts[n.type] = (typeCounts[n.type] || 0) + 1;
-                });
-
+                // Draw legend on same page at bottom
+                const legendY = pageHeight - legendHeight + 5;
                 const legendColors = {
                     validator: [249, 117, 131],
                     sentry: [86, 211, 100],
@@ -1326,17 +1315,35 @@ http://54.183.6.67:26657</textarea>
                     unknown: [139, 148, 158]
                 };
 
-                let textY = 220;
+                const typeCounts = {};
+                Object.values(nodes).forEach(n => {
+                    typeCounts[n.type] = (typeCounts[n.type] || 0) + 1;
+                });
+
+                // Draw legend items horizontally
+                let legendX = 20;
+                pdf.setFontSize(9);
                 for (const [type, count] of Object.entries(typeCounts)) {
-                    // Draw colored circle
                     const color = legendColors[type] || legendColors.unknown;
                     pdf.setFillColor(color[0], color[1], color[2]);
-                    pdf.circle(48, textY - 3, 4, 'F');
-                    // Draw text
-                    pdf.setTextColor(0, 0, 0);
-                    pdf.text(`${type}: ${count}`, 58, textY);
-                    textY += 20;
+                    pdf.circle(legendX, legendY, 3, 'F');
+                    pdf.setTextColor(100, 100, 100);
+                    const label = `${type}: ${count}`;
+                    pdf.text(label, legendX + 5, legendY + 1);
+                    legendX += pdf.getTextWidth(label) + 15;
                 }
+
+                // Add stats on the right side of legend
+                pdf.setFontSize(8);
+                pdf.setTextColor(120, 120, 120);
+                const statsText = `Nodes: ${Object.keys(nodes).length} | Connections: ${edges.length} | RPC: ${Object.values(nodes).filter(n => n.rpc_accessible).length} | Orgs: ${new Set(Object.values(nodes).map(n => n.org)).size}`;
+                pdf.text(statsText, pageWidth - 10, legendY + 1, { align: 'right' });
+
+                // Add title and date
+                pdf.setFontSize(8);
+                pdf.setTextColor(150, 150, 150);
+                pdf.text('DCL Network Explorer', 10, pageHeight - 5);
+                pdf.text(new Date().toLocaleString(), pageWidth - 10, pageHeight - 5, { align: 'right' });
 
                 pdf.save(`dcl-network-${new Date().toISOString().slice(0,10)}.pdf`);
                 log('PDF exported successfully', 'success');
