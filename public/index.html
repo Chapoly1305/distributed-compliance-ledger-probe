@@ -1106,6 +1106,20 @@ http://54.183.6.67:26657</textarea>
             }
         }
 
+        // Query DCL validator module via LCD REST API (port 1317)
+        async function queryDclValidators(rpcUrl) {
+            try {
+                // Try LCD endpoint first (replace RPC port 26657 with LCD port 1317)
+                const lcdUrl = rpcUrl.replace(':26657', ':1317').replace(':443', ':1317');
+                const resp = await fetchWithTimeout(proxyUrl(`${lcdUrl}/dcl/validator/nodes`), 5000);
+                const data = await resp.json();
+                return data.validator || [];
+            } catch (e) {
+                // LCD not available, return empty
+                return [];
+            }
+        }
+
         // Probe validators - compare on-chain validators with P2P discovered nodes
         async function probeValidators() {
             const btn = document.getElementById('probeValidatorsBtn');
@@ -1125,18 +1139,28 @@ http://54.183.6.67:26657</textarea>
                 return;
             }
 
-            // Try each seed URL until one works
-            let onChainValidators = [];
+            // Try to get DCL validators with monikers from LCD endpoint
+            let dclValidators = [];
             for (const rpcUrl of seedUrls) {
-                onChainValidators = await queryOnChainValidators(rpcUrl);
-                if (onChainValidators.length > 0) {
-                    log(`Found ${onChainValidators.length} on-chain validators from ${rpcUrl}`, 'success');
+                dclValidators = await queryDclValidators(rpcUrl);
+                if (dclValidators.length > 0) {
+                    log(`Found ${dclValidators.length} DCL validators with monikers`, 'success');
                     break;
                 }
             }
 
-            if (onChainValidators.length === 0) {
-                log('Could not fetch on-chain validators from any seed node', 'error');
+            // Also get consensus validators from Tendermint RPC
+            let onChainValidators = [];
+            for (const rpcUrl of seedUrls) {
+                onChainValidators = await queryOnChainValidators(rpcUrl);
+                if (onChainValidators.length > 0) {
+                    log(`Found ${onChainValidators.length} consensus validators from ${rpcUrl}`, 'success');
+                    break;
+                }
+            }
+
+            if (onChainValidators.length === 0 && dclValidators.length === 0) {
+                log('Could not fetch validators from any seed node', 'error');
                 btn.disabled = false;
                 btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg> Probe Validators';
                 return;
@@ -1144,98 +1168,138 @@ http://54.183.6.67:26657</textarea>
 
             // Get P2P discovered validators (nodes with type "validator")
             const p2pValidators = Object.values(nodes).filter(n => n.type === 'validator');
-            const p2pValidatorsByAddress = {};
 
-            // Create a map by truncated address for matching
-            // Tendermint validator address is derived from public key
+            // Build a map of P2P validators by moniker (lowercase) for matching
+            const p2pByMoniker = {};
             p2pValidators.forEach(v => {
-                // Store by moniker for matching (since we don't have the exact address mapping)
-                p2pValidatorsByAddress[v.moniker.toLowerCase()] = v;
+                p2pByMoniker[v.moniker.toLowerCase()] = v;
             });
 
-            // Analyze exposure
-            const validatorResults = onChainValidators.map(v => {
-                const address = v.address;
-                const pubKey = v.pub_key?.value || '';
-                const votingPower = parseInt(v.voting_power) || 0;
+            // Use DCL validators if available (they have monikers), otherwise use consensus validators
+            const totalOnChain = dclValidators.length > 0 ? dclValidators.length : onChainValidators.length;
 
-                // Try to find matching P2P node
-                // Check if any P2P discovered node's moniker suggests it's this validator
-                let p2pMatch = null;
-                let isExposed = false;
+            // Match DCL validators with P2P discovered nodes
+            const validatorAnalysis = dclValidators.length > 0
+                ? dclValidators.map(v => {
+                    const moniker = v.description?.moniker || 'Unknown';
+                    const owner = v.owner || '';
+                    const jailed = v.jailed || false;
+                    const power = v.power || 0;
 
-                // Look for P2P nodes that might be this validator
-                for (const [moniker, node] of Object.entries(p2pValidatorsByAddress)) {
-                    // Simple heuristic: if we found a validator via P2P, it's exposed
-                    if (node.rpc_accessible) {
-                        p2pMatch = node;
-                        isExposed = true;
-                        break;
-                    }
-                }
+                    // Check if this validator was discovered via P2P
+                    const p2pMatch = p2pByMoniker[moniker.toLowerCase()];
 
-                return {
-                    address,
-                    pubKey: pubKey.slice(0, 20) + '...',
-                    votingPower,
-                    p2pMatch,
-                    isExposed
-                };
-            });
+                    return {
+                        moniker,
+                        owner,
+                        jailed,
+                        power,
+                        p2pMatch,
+                        isExposed: !!p2pMatch
+                    };
+                })
+                : onChainValidators.map(v => ({
+                    moniker: null,
+                    address: v.address,
+                    votingPower: v.voting_power,
+                    p2pMatch: null,
+                    isExposed: false
+                }));
 
-            // For better analysis: check which P2P discovered validators exist
-            const exposedCount = p2pValidators.filter(v => v.rpc_accessible).length;
-            const totalOnChain = onChainValidators.length;
+            // Count exposed vs hidden
+            const exposedCount = validatorAnalysis.filter(v => v.isExposed).length;
             const hiddenCount = totalOnChain - exposedCount;
 
-            // Update panel
+            // Update panel summary
             document.getElementById('total-validators').textContent = totalOnChain;
             document.getElementById('exposed-validators').textContent = exposedCount;
             document.getElementById('hidden-validators').textContent = hiddenCount;
 
-            // Build validator list - show P2P discovered validators and their exposure status
-            const listHtml = p2pValidators.length > 0
-                ? p2pValidators.map(v => {
-                    const statusClass = v.rpc_accessible ? 'exposed' : 'hidden';
-                    const statusText = v.rpc_accessible ? 'RPC Exposed' : 'RPC Hidden';
-                    return `
-                        <div class="validator-item">
-                            <div class="validator-info">
-                                <div class="validator-name">${v.moniker}</div>
-                                <div class="validator-details">
-                                    ${v.ip}:${v.port} | ${v.id.slice(0, 16)}...
+            // Build the validator list HTML
+            let listHtml = '';
+
+            if (dclValidators.length > 0) {
+                // Show DCL validators with their exposure status
+                listHtml = `
+                    <div class="section-title">Registered Validators (${dclValidators.length})</div>
+                    ${validatorAnalysis.map(v => {
+                        let statusClass, statusText;
+                        if (v.jailed) {
+                            statusClass = 'jailed';
+                            statusText = 'Jailed';
+                        } else if (v.isExposed) {
+                            statusClass = 'exposed';
+                            statusText = 'P2P Exposed';
+                        } else {
+                            statusClass = 'hidden';
+                            statusText = 'Hidden';
+                        }
+
+                        const p2pInfo = v.p2pMatch
+                            ? `<div class="validator-details">${v.p2pMatch.ip}:${v.p2pMatch.port} | RPC: ${v.p2pMatch.rpc_accessible ? 'Open' : 'Closed'}</div>`
+                            : `<div class="validator-details">Not discovered via P2P gossip</div>`;
+
+                        return `
+                            <div class="validator-item">
+                                <div class="validator-info">
+                                    <div class="validator-name">${v.moniker}</div>
+                                    ${p2pInfo}
+                                    <div class="validator-details" style="font-size: 10px; color: var(--text-muted);">
+                                        Owner: ${v.owner.slice(0, 20)}... | Power: ${v.power}
+                                    </div>
+                                </div>
+                                <div class="validator-status">
+                                    <span class="status-badge ${statusClass}">${statusText}</span>
                                 </div>
                             </div>
-                            <div class="validator-status">
-                                <span class="status-badge ${statusClass}">${statusText}</span>
-                            </div>
-                        </div>
-                    `;
-                }).join('')
-                : `<div style="text-align: center; padding: 20px; color: var(--text-secondary);">
-                    <p>No validators discovered via P2P gossip.</p>
-                    <p style="font-size: 11px; margin-top: 8px;">This could mean validators are properly hidden behind sentries, or run network discovery first.</p>
-                   </div>`;
-
-            // Add on-chain validators section
-            const onChainHtml = `
-                <div class="section-title" style="margin-top: 20px;">On-Chain Consensus Validators (${totalOnChain})</div>
-                ${onChainValidators.map(v => `
-                    <div class="validator-item">
-                        <div class="validator-info">
-                            <div class="validator-name" style="font-family: monospace; font-size: 11px;">${v.address}</div>
-                            <div class="validator-details">
-                                Voting Power: ${v.voting_power}
-                            </div>
-                        </div>
+                        `;
+                    }).join('')}
+                `;
+            } else {
+                // Fallback: show P2P discovered validators
+                listHtml = `
+                    <div class="section-title">P2P Discovered Validators (${p2pValidators.length})</div>
+                    ${p2pValidators.length > 0
+                        ? p2pValidators.map(v => {
+                            const statusClass = v.rpc_accessible ? 'exposed' : 'hidden';
+                            const statusText = v.rpc_accessible ? 'RPC Exposed' : 'RPC Hidden';
+                            return `
+                                <div class="validator-item">
+                                    <div class="validator-info">
+                                        <div class="validator-name">${v.moniker}</div>
+                                        <div class="validator-details">
+                                            ${v.ip}:${v.port} | ${v.id.slice(0, 16)}...
+                                        </div>
+                                    </div>
+                                    <div class="validator-status">
+                                        <span class="status-badge ${statusClass}">${statusText}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')
+                        : `<div style="text-align: center; padding: 20px; color: var(--text-secondary);">
+                            <p>No validators discovered via P2P gossip.</p>
+                            <p style="font-size: 11px; margin-top: 8px;">Run network discovery first, or validators are properly hidden.</p>
+                           </div>`
+                    }
+                    <div class="section-title" style="margin-top: 20px;">Consensus Validators (${onChainValidators.length})</div>
+                    <div style="font-size: 11px; color: var(--text-muted); padding: 8px 0;">
+                        LCD endpoint not available. Showing consensus addresses only (no monikers).
                     </div>
-                `).join('')}
-            `;
+                    ${onChainValidators.map(v => `
+                        <div class="validator-item">
+                            <div class="validator-info">
+                                <div class="validator-name" style="font-family: monospace; font-size: 11px;">${v.address}</div>
+                                <div class="validator-details">
+                                    Voting Power: ${v.voting_power}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+            }
 
-            document.getElementById('validator-list').innerHTML =
-                '<div class="section-title">P2P Discovered Validators (' + p2pValidators.length + ')</div>' +
-                listHtml +
-                onChainHtml;
+            document.getElementById('validator-list').innerHTML = listHtml;
 
             // Show panel
             document.getElementById('validator-panel').style.display = 'block';
