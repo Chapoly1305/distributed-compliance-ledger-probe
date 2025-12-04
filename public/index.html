@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>DCL Network Explorer</title>
+    <title>(Unofficial) DCL Network Explorer</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -85,6 +85,11 @@
             justify-content: center;
         }
         .header-icon svg { width: 20px; height: 20px; fill: white; }
+        .header-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
         h1 {
             font-size: 18px;
             font-weight: 600;
@@ -657,11 +662,9 @@
     <div id="container">
         <div id="sidebar">
             <div class="header">
-                <div class="header-icon">
-                    <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-                </div>
+                <img src="https://webui.dcl.csa-iot.org/images/logo-transparent.png" alt="DCL Logo" class="header-logo">
                 <div>
-                    <h1>DCL Network Explorer</h1>
+                    <h1>(Unofficial) DCL Network Explorer</h1>
                     <div class="header-subtitle">Distributed Compliance Ledger</div>
                 </div>
             </div>
@@ -723,7 +726,7 @@ http://54.183.6.67:26657</textarea>
         <div id="graph">
             <svg></svg>
             <div id="node-info"></div>
-            <div id="watermark">DCL Network Explorer - dcl-probe.vercel.app</div>
+            <div id="watermark">(Unofficial) DCL Network Explorer</div>
             <div id="controls">
                 <button onclick="zoomIn()">
                     <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
@@ -1342,7 +1345,7 @@ http://54.183.6.67:26657</textarea>
                 // Add title and date
                 pdf.setFontSize(8);
                 pdf.setTextColor(150, 150, 150);
-                pdf.text('DCL Network Explorer', 10, pageHeight - 5);
+                pdf.text('(Unofficial) DCL Network Explorer', 10, pageHeight - 5);
                 pdf.text(new Date().toLocaleString(), pageWidth - 10, pageHeight - 5, { align: 'right' });
 
                 pdf.save(`dcl-network-${new Date().toISOString().slice(0,10)}.pdf`);
