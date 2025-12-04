@@ -1,0 +1,1589 @@
+{
+  "nodes": {
+    "26cd64e9391cd690fe29e97ad9871531b73c1d73": {
+      "id": "26cd64e9391cd690fe29e97ad9871531b73c1d73",
+      "ip": "on.dcl.csa-iot.org",
+      "port": 26656,
+      "moniker": "CSA-ON-04",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "CSA",
+      "rpc_url": "https://on.dcl.csa-iot.org:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "6b29ff21159b232b7d8c19079d35be407c846c20": {
+      "id": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "ip": "54.163.57.173",
+      "port": 26656,
+      "moniker": "Amazon-VN-01",
+      "tendermint_version": "0.37.4",
+      "type": "validator",
+      "org": "Amazon",
+      "rpc_url": "http://54.163.57.173:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "add9e1972b68487af3d64c79ab9883746f1a95f8": {
+      "id": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "ip": "13.52.115.12",
+      "port": 26656,
+      "moniker": "CSA-Pub-SN-01",
+      "tendermint_version": "0.37.4",
+      "type": "sentry",
+      "org": "CSA",
+      "rpc_url": "http://13.52.115.12:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "be21399af86efeb91041d55d063103aa33f973a2": {
+      "id": "be21399af86efeb91041d55d063103aa33f973a2",
+      "ip": "18.130.162.236",
+      "port": 26656,
+      "moniker": "DSR-Priv-SN-01",
+      "tendermint_version": "0.37.4",
+      "type": "sentry",
+      "org": "DSR",
+      "rpc_url": "http://18.130.162.236:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "e3f9a40a0f8e1a482793fa41ca44dca722891a71": {
+      "id": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "ip": "47.100.246.240",
+      "port": 26656,
+      "moniker": "Tuya-VN-03",
+      "tendermint_version": "0.37.4",
+      "type": "validator",
+      "org": "Tuya",
+      "rpc_url": "http://47.100.246.240:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "29d5bc40bd86dc148c2e945b32524782fb23441d": {
+      "id": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "ip": "35.155.38.14",
+      "port": 26656,
+      "moniker": "Lumi-VN-01",
+      "tendermint_version": "0.37.4",
+      "type": "validator",
+      "org": "Lumi",
+      "rpc_url": "http://35.155.38.14:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "d2778f747cbcaa9cf1c7d4c5d1c3687ac6d79739": {
+      "id": "d2778f747cbcaa9cf1c7d4c5d1c3687ac6d79739",
+      "ip": "52.53.135.1",
+      "port": 26656,
+      "moniker": "CSA-Priv-SN-01",
+      "tendermint_version": "0.37.4",
+      "type": "sentry",
+      "org": "CSA",
+      "rpc_url": "http://52.53.135.1:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "ba1f547b83040904568f181a39ebe6d7e29dd438": {
+      "id": "ba1f547b83040904568f181a39ebe6d7e29dd438",
+      "ip": "54.183.6.67",
+      "port": 26656,
+      "moniker": "CSA-SeedN-01",
+      "tendermint_version": "0.37.4",
+      "type": "seed",
+      "org": "CSA",
+      "rpc_url": "http://54.183.6.67:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "054f239fd098ad502c51f507ba3bc68e19a88a19": {
+      "id": "054f239fd098ad502c51f507ba3bc68e19a88a19",
+      "ip": "34.60.27.177",
+      "port": 26656,
+      "moniker": "node1",
+      "tendermint_version": "0.37.4",
+      "type": "unknown",
+      "org": "node1",
+      "rpc_url": "http://34.60.27.177:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "4ee188e086799bdbe6f50fd21ab58e5a15fa2a36": {
+      "id": "4ee188e086799bdbe6f50fd21ab58e5a15fa2a36",
+      "ip": "52.205.88.163",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-USAmazon-Gamma",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://52.205.88.163:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "bbe907de3de83dd5988dbd15c133634d108a7386": {
+      "id": "bbe907de3de83dd5988dbd15c133634d108a7386",
+      "ip": "44.231.62.178",
+      "port": 26656,
+      "moniker": "Tuya-ON-US-1",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Tuya",
+      "rpc_url": "http://44.231.62.178:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "ea375f867f0b53e17a19ab2c62bf18eac5fb8879": {
+      "id": "ea375f867f0b53e17a19ab2c62bf18eac5fb8879",
+      "ip": "52.19.91.220",
+      "port": 26656,
+      "moniker": "Samsung-ON-01",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Samsung",
+      "rpc_url": "http://52.19.91.220:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "351f268724b842fa19b27b0108b70fd8e4cfab49": {
+      "id": "351f268724b842fa19b27b0108b70fd8e4cfab49",
+      "ip": "104.34.202.233",
+      "port": 26656,
+      "moniker": "node1",
+      "tendermint_version": "0.37.4",
+      "type": "unknown",
+      "org": "node1",
+      "rpc_url": "http://104.34.202.233:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "b8e5964458334d4c917d114506a7cbb4245b4d51": {
+      "id": "b8e5964458334d4c917d114506a7cbb4245b4d51",
+      "ip": "34.86.157.168",
+      "port": 26656,
+      "moniker": "Tuya-ON-UE-2",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Tuya",
+      "rpc_url": "http://34.86.157.168:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "8c2e2d9293f21b297e743e43c4477935061fa098": {
+      "id": "8c2e2d9293f21b297e743e43c4477935061fa098",
+      "ip": "3.125.59.4",
+      "port": 26656,
+      "moniker": "Tuya-ON-EU-1",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Tuya",
+      "rpc_url": "http://3.125.59.4:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "5bcac6b5dd837f8c3132c188f7f9f2ded43f43e1": {
+      "id": "5bcac6b5dd837f8c3132c188f7f9f2ded43f43e1",
+      "ip": "54.208.72.48",
+      "port": 26656,
+      "moniker": "Comcast-VN-01",
+      "tendermint_version": "0.37.4",
+      "type": "validator",
+      "org": "Comcast",
+      "rpc_url": "http://54.208.72.48:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "cc32715d1ca84e71c293f69545c266ce554e7fc1": {
+      "id": "cc32715d1ca84e71c293f69545c266ce554e7fc1",
+      "ip": "52.136.205.134",
+      "port": 26656,
+      "moniker": "CSA-Priv-SN-04",
+      "tendermint_version": "0.37.4",
+      "type": "sentry",
+      "org": "CSA",
+      "rpc_url": "http://52.136.205.134:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "3c6a644f374ee89172fcba7ea81a076e606a1c2d": {
+      "id": "3c6a644f374ee89172fcba7ea81a076e606a1c2d",
+      "ip": "35.80.181.38",
+      "port": 26656,
+      "moniker": "IoTSS AIC Observer 02",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "IoTSS AIC Observer 02",
+      "rpc_url": "http://35.80.181.38:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "78fabf3886d22e54d1f37aa3952b2eb8638fb130": {
+      "id": "78fabf3886d22e54d1f37aa3952b2eb8638fb130",
+      "ip": "18.201.110.189",
+      "port": 26656,
+      "moniker": "CSA-ON-02",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "CSA",
+      "rpc_url": "http://18.201.110.189:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "70c072752bf061c984f6877e1f691294c04a6157": {
+      "id": "70c072752bf061c984f6877e1f691294c04a6157",
+      "ip": "52.204.175.98",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-USAmazon-Prod",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://52.204.175.98:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "63de27596bc1390a899463e7cbfd68f6951b3a3b": {
+      "id": "63de27596bc1390a899463e7cbfd68f6951b3a3b",
+      "ip": "52.208.27.55",
+      "port": 26656,
+      "moniker": "IoTSS EIC Observer 02",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "IoTSS EIC Observer 02",
+      "rpc_url": "http://52.208.27.55:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "63a36de4f8f483ab17704d87575eadbe83635e62": {
+      "id": "63a36de4f8f483ab17704d87575eadbe83635e62",
+      "ip": "79.125.77.211",
+      "port": 26656,
+      "moniker": "IoTSS EIC Observer 01",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "IoTSS EIC Observer 01",
+      "rpc_url": "http://79.125.77.211:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "970809c1257ac737e61387d5923e244a6c720943": {
+      "id": "970809c1257ac737e61387d5923e244a6c720943",
+      "ip": "44.241.185.35",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-USAmazon-Beta",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://44.241.185.35:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "183be5541d921de0c2a5454674a1ebf31fa93759": {
+      "id": "183be5541d921de0c2a5454674a1ebf31fa93759",
+      "ip": "139.196.94.97",
+      "port": 26656,
+      "moniker": "Tuya-ON-aysh-prod-dcld-b-27",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Tuya",
+      "rpc_url": "http://139.196.94.97:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "2415e044ef903efac044eff3f4d0c94099dcc54d": {
+      "id": "2415e044ef903efac044eff3f4d0c94099dcc54d",
+      "ip": "146.148.28.43",
+      "port": 26656,
+      "moniker": "CSA-Priv-SN-03",
+      "tendermint_version": "0.37.4",
+      "type": "sentry",
+      "org": "CSA",
+      "rpc_url": "http://146.148.28.43:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "0ede9d0421f45bac7dfcf88d1f6a3ac517d0602d": {
+      "id": "0ede9d0421f45bac7dfcf88d1f6a3ac517d0602d",
+      "ip": "34.213.253.23",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-EUAmazon-Beta",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://34.213.253.23:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "242d393b23fbb220573a16ac2d62baa320e8d5b6": {
+      "id": "242d393b23fbb220573a16ac2d62baa320e8d5b6",
+      "ip": "8.219.10.200",
+      "port": 26656,
+      "moniker": "Tuya-SG-ON-002",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Tuya",
+      "rpc_url": "http://8.219.10.200:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "97d7b7222551a6fce7173dea37a79f9ac8eba2b3": {
+      "id": "97d7b7222551a6fce7173dea37a79f9ac8eba2b3",
+      "ip": "13.57.210.222",
+      "port": 26656,
+      "moniker": "CSA-ON-01",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "CSA",
+      "rpc_url": "http://13.57.210.222:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "27d26e72413d5df45870185af8b3d8bd6092eba5": {
+      "id": "27d26e72413d5df45870185af8b3d8bd6092eba5",
+      "ip": "54.180.40.2",
+      "port": 26656,
+      "moniker": "Samsung-ON-01",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Samsung",
+      "rpc_url": "http://54.180.40.2:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "b79c600bca2e41b7840e8e68c6da60b28e787f95": {
+      "id": "b79c600bca2e41b7840e8e68c6da60b28e787f95",
+      "ip": "13.125.179.195",
+      "port": 26656,
+      "moniker": "IoTSS KIC Observer 01",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "IoTSS KIC Observer 01",
+      "rpc_url": "http://13.125.179.195:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "778c00453d5f4c000f324f2d3cb479dfd3936ba2": {
+      "id": "778c00453d5f4c000f324f2d3cb479dfd3936ba2",
+      "ip": "65.1.47.104",
+      "port": 26656,
+      "moniker": "Tuya-ON-IN-1",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Tuya",
+      "rpc_url": "http://65.1.47.104:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "ab340c1d21bc05ddb544ff8b7821d1c9a1c88f64": {
+      "id": "ab340c1d21bc05ddb544ff8b7821d1c9a1c88f64",
+      "ip": "34.90.161.224",
+      "port": 26656,
+      "moniker": "Tuya-ON-gcpwe-prod-dcld-a-0",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Tuya",
+      "rpc_url": "http://34.90.161.224:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "32b826ab2245430d24331b62fa9d50dedd91d36d": {
+      "id": "32b826ab2245430d24331b62fa9d50dedd91d36d",
+      "ip": "34.233.14.154",
+      "port": 26656,
+      "moniker": "Samsung-ON-01",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Samsung",
+      "rpc_url": "http://34.233.14.154:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "50efd4481f5d9375e26b19b79f8d99bf84dd4888": {
+      "id": "50efd4481f5d9375e26b19b79f8d99bf84dd4888",
+      "ip": "174.129.7.19",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-USAmazon-Prod",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://174.129.7.19:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "6d3cbd13cf0de76e630b837510497e3e19e35847": {
+      "id": "6d3cbd13cf0de76e630b837510497e3e19e35847",
+      "ip": "95.217.42.152",
+      "port": 26656,
+      "moniker": "Matter alpha-ON-01",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Matter alpha",
+      "rpc_url": "http://95.217.42.152:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "1034b4f5e6c5da7590b4e9e0feafc8f324f4f312": {
+      "id": "1034b4f5e6c5da7590b4e9e0feafc8f324f4f312",
+      "ip": "35.170.66.30",
+      "port": 26656,
+      "moniker": "CHARTER-PRIVATE-SN-01",
+      "tendermint_version": "0.37.4",
+      "type": "sentry",
+      "org": "CHARTER",
+      "rpc_url": "http://35.170.66.30:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "2976dca482a762ca3b62088ab9a6d369275bbc73": {
+      "id": "2976dca482a762ca3b62088ab9a6d369275bbc73",
+      "ip": "54.218.192.98",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-FEAmazon-Gamma",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://54.218.192.98:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "8675059d7ac37c5eac06c57bc35d04d59a89b98e": {
+      "id": "8675059d7ac37c5eac06c57bc35d04d59a89b98e",
+      "ip": "47.101.136.107",
+      "port": 26656,
+      "moniker": "Tuya-ON-AY-01",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Tuya",
+      "rpc_url": "http://47.101.136.107:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "a862671a5742ca604930713c527c062b435ad7e8": {
+      "id": "a862671a5742ca604930713c527c062b435ad7e8",
+      "ip": "35.80.176.210",
+      "port": 26656,
+      "moniker": "IoTSS AIC Observer 01",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "IoTSS AIC Observer 01",
+      "rpc_url": "http://35.80.176.210:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "85bebf3f7b4051c6354a83066c232c1be699ed6c": {
+      "id": "85bebf3f7b4051c6354a83066c232c1be699ed6c",
+      "ip": "35.169.175.96",
+      "port": 26656,
+      "moniker": "Samsung-ON-01",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Samsung",
+      "rpc_url": "http://35.169.175.96:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "89c9e6649080092400ae0915c6b8bd775c38d3d2": {
+      "id": "89c9e6649080092400ae0915c6b8bd775c38d3d2",
+      "ip": "3.233.57.53",
+      "port": 26656,
+      "moniker": "Samsung-ON-01",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Samsung",
+      "rpc_url": "http://3.233.57.53:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "0419283c126887331e6aafc682dfc957354ce81a": {
+      "id": "0419283c126887331e6aafc682dfc957354ce81a",
+      "ip": "106.14.172.75",
+      "port": 26656,
+      "moniker": "Tuya-ON-aysh-prod-dcld-a-26",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "Tuya",
+      "rpc_url": "http://106.14.172.75:26657",
+      "rpc_accessible": true,
+      "dcl_version": "1.5.2",
+      "height": "236599"
+    },
+    "deae9251640745592d7d49a84c737fc5834b7fc5": {
+      "id": "deae9251640745592d7d49a84c737fc5834b7fc5",
+      "ip": "34.63.221.154",
+      "port": 26656,
+      "moniker": "node1",
+      "tendermint_version": "0.37.4",
+      "type": "unknown",
+      "org": "node1",
+      "rpc_url": "http://34.63.221.154:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "13b71a7d97ec297df9bf428378e9b3e2e47c2926": {
+      "id": "13b71a7d97ec297df9bf428378e9b3e2e47c2926",
+      "ip": "34.236.83.200",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-USAmazon-Prod",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://34.236.83.200:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "87d3446c3927599d6485fa63df501b7fd2341f5a": {
+      "id": "87d3446c3927599d6485fa63df501b7fd2341f5a",
+      "ip": "13.124.79.22",
+      "port": 26656,
+      "moniker": "IoTSS KIC Observer 02",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "IoTSS KIC Observer 02",
+      "rpc_url": "http://13.124.79.22:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "71f818b98d02247568a1421bf42ca6831bb8bf8a": {
+      "id": "71f818b98d02247568a1421bf42ca6831bb8bf8a",
+      "ip": "52.80.209.76",
+      "port": 26656,
+      "moniker": "TrustAsia-MainNet-ON",
+      "tendermint_version": "0.37.4",
+      "type": "unknown",
+      "org": "TrustAsia",
+      "rpc_url": "http://52.80.209.76:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "515f9db4859993515174e3ff129861ab47042af3": {
+      "id": "515f9db4859993515174e3ff129861ab47042af3",
+      "ip": "44.241.171.146",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-USAmazon-Alpha",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://44.241.171.146:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "e2e068213d4e24c31121be49dd39c23daa2100df": {
+      "id": "e2e068213d4e24c31121be49dd39c23daa2100df",
+      "ip": "34.143.142.111",
+      "port": 26656,
+      "moniker": "node1",
+      "tendermint_version": "0.37.4",
+      "type": "unknown",
+      "org": "node1",
+      "rpc_url": "http://34.143.142.111:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "e969fbb2ce811504baeff026dbf58ef2d2d33f7e": {
+      "id": "e969fbb2ce811504baeff026dbf58ef2d2d33f7e",
+      "ip": "34.208.12.194",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-FEAmazon-Beta",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://34.208.12.194:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "db85aaee27f1629cc6d9b65ca294a9433beff6e0": {
+      "id": "db85aaee27f1629cc6d9b65ca294a9433beff6e0",
+      "ip": "35.80.194.179",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-FEAmazon-Prod",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://35.80.194.179:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "4774253596ff7c34e39329c32304e39eccb89725": {
+      "id": "4774253596ff7c34e39329c32304e39eccb89725",
+      "ip": "52.33.2.192",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-FEAmazon-Prod",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://52.33.2.192:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "661fa97f5b885c56ad33a338d4d405c6d5f6c7c9": {
+      "id": "661fa97f5b885c56ad33a338d4d405c6d5f6c7c9",
+      "ip": "54.189.154.169",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-FEAmazon-Prod",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://54.189.154.169:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "cafe79e72d10f58e8a3b431c27cef086b753ef8f": {
+      "id": "cafe79e72d10f58e8a3b431c27cef086b753ef8f",
+      "ip": "54.75.189.91",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-EUAmazon-Prod",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://54.75.189.91:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "7d392f3f247a97e5201d4443bd8943ef5717048c": {
+      "id": "7d392f3f247a97e5201d4443bd8943ef5717048c",
+      "ip": "34.246.23.69",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-EUAmazon-Gamma",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://34.246.23.69:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "819e7895e7f0e5c24104991ffeda37bc104a7976": {
+      "id": "819e7895e7f0e5c24104991ffeda37bc104a7976",
+      "ip": "63.35.3.70",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-EUAmazon-Prod",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://63.35.3.70:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "22671a69531175fdeb41664ec9e5b615aaba2686": {
+      "id": "22671a69531175fdeb41664ec9e5b615aaba2686",
+      "ip": "3.249.75.117",
+      "port": 26656,
+      "moniker": "CSA-ON-03",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "CSA",
+      "rpc_url": "http://3.249.75.117:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "bf45ecdf8cc5f2d2713c13ff465df8345928e573": {
+      "id": "bf45ecdf8cc5f2d2713c13ff465df8345928e573",
+      "ip": "108.128.78.246",
+      "port": 26656,
+      "moniker": "amazon-prodnet-observer-EUAmazon-Prod",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "amazon",
+      "rpc_url": "http://108.128.78.246:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "0fcddfca3f4ed22fcd64fbec2b6df75e1f68226e": {
+      "id": "0fcddfca3f4ed22fcd64fbec2b6df75e1f68226e",
+      "ip": "129.174.255.177",
+      "port": 26656,
+      "moniker": "observer-mainnet",
+      "tendermint_version": "0.37.4",
+      "type": "observer",
+      "org": "observer",
+      "rpc_url": "http://129.174.255.177:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "ef89552a021392495960e82a541dc94ae7519b85": {
+      "id": "ef89552a021392495960e82a541dc94ae7519b85",
+      "ip": "146.148.23.182",
+      "port": 26656,
+      "moniker": "CSA-VN-02",
+      "tendermint_version": "0.37.4",
+      "type": "validator",
+      "org": "CSA",
+      "rpc_url": "http://146.148.23.182:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "f0239f76e2b3cd2848411cc9b1377c2dee371f65": {
+      "id": "f0239f76e2b3cd2848411cc9b1377c2dee371f65",
+      "ip": "199.48.215.253",
+      "port": 26656,
+      "moniker": "CommScope-VN-01",
+      "tendermint_version": "0.37.4",
+      "type": "validator",
+      "org": "CommScope",
+      "rpc_url": "http://199.48.215.253:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "1a757528c43e9a0e5f70805ca5d162d0b1f1d7c8": {
+      "id": "1a757528c43e9a0e5f70805ca5d162d0b1f1d7c8",
+      "ip": "3.37.95.120",
+      "port": 26656,
+      "moniker": "Samsung-SN-01",
+      "tendermint_version": "0.37.4",
+      "type": "sentry",
+      "org": "Samsung",
+      "rpc_url": "http://3.37.95.120:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    },
+    "e8450750b01cdeefd30d7ec4e00a8daa71b4283e": {
+      "id": "e8450750b01cdeefd30d7ec4e00a8daa71b4283e",
+      "ip": "18.144.69.78",
+      "port": 26656,
+      "moniker": "CSA-Priv-SN-02",
+      "tendermint_version": "0.37.4",
+      "type": "sentry",
+      "org": "CSA",
+      "rpc_url": "http://18.144.69.78:26657",
+      "rpc_accessible": false,
+      "dcl_version": null,
+      "height": null
+    }
+  },
+  "edges": [
+    {
+      "source": "26cd64e9391cd690fe29e97ad9871531b73c1d73",
+      "target": "6b29ff21159b232b7d8c19079d35be407c846c20"
+    },
+    {
+      "source": "26cd64e9391cd690fe29e97ad9871531b73c1d73",
+      "target": "add9e1972b68487af3d64c79ab9883746f1a95f8"
+    },
+    {
+      "source": "26cd64e9391cd690fe29e97ad9871531b73c1d73",
+      "target": "be21399af86efeb91041d55d063103aa33f973a2"
+    },
+    {
+      "source": "26cd64e9391cd690fe29e97ad9871531b73c1d73",
+      "target": "e3f9a40a0f8e1a482793fa41ca44dca722891a71"
+    },
+    {
+      "source": "26cd64e9391cd690fe29e97ad9871531b73c1d73",
+      "target": "29d5bc40bd86dc148c2e945b32524782fb23441d"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "d2778f747cbcaa9cf1c7d4c5d1c3687ac6d79739"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "29d5bc40bd86dc148c2e945b32524782fb23441d"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "6b29ff21159b232b7d8c19079d35be407c846c20"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "be21399af86efeb91041d55d063103aa33f973a2"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "e3f9a40a0f8e1a482793fa41ca44dca722891a71"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "ba1f547b83040904568f181a39ebe6d7e29dd438"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "054f239fd098ad502c51f507ba3bc68e19a88a19"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "4ee188e086799bdbe6f50fd21ab58e5a15fa2a36"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "bbe907de3de83dd5988dbd15c133634d108a7386"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "ea375f867f0b53e17a19ab2c62bf18eac5fb8879"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "351f268724b842fa19b27b0108b70fd8e4cfab49"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "b8e5964458334d4c917d114506a7cbb4245b4d51"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "8c2e2d9293f21b297e743e43c4477935061fa098"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "5bcac6b5dd837f8c3132c188f7f9f2ded43f43e1"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "cc32715d1ca84e71c293f69545c266ce554e7fc1"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "3c6a644f374ee89172fcba7ea81a076e606a1c2d"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "78fabf3886d22e54d1f37aa3952b2eb8638fb130"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "70c072752bf061c984f6877e1f691294c04a6157"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "63de27596bc1390a899463e7cbfd68f6951b3a3b"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "63a36de4f8f483ab17704d87575eadbe83635e62"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "970809c1257ac737e61387d5923e244a6c720943"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "183be5541d921de0c2a5454674a1ebf31fa93759"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "2415e044ef903efac044eff3f4d0c94099dcc54d"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "0ede9d0421f45bac7dfcf88d1f6a3ac517d0602d"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "242d393b23fbb220573a16ac2d62baa320e8d5b6"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "97d7b7222551a6fce7173dea37a79f9ac8eba2b3"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "27d26e72413d5df45870185af8b3d8bd6092eba5"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "b79c600bca2e41b7840e8e68c6da60b28e787f95"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "778c00453d5f4c000f324f2d3cb479dfd3936ba2"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "ab340c1d21bc05ddb544ff8b7821d1c9a1c88f64"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "32b826ab2245430d24331b62fa9d50dedd91d36d"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "50efd4481f5d9375e26b19b79f8d99bf84dd4888"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "6d3cbd13cf0de76e630b837510497e3e19e35847"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "1034b4f5e6c5da7590b4e9e0feafc8f324f4f312"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "2976dca482a762ca3b62088ab9a6d369275bbc73"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "8675059d7ac37c5eac06c57bc35d04d59a89b98e"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "a862671a5742ca604930713c527c062b435ad7e8"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "85bebf3f7b4051c6354a83066c232c1be699ed6c"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "89c9e6649080092400ae0915c6b8bd775c38d3d2"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "0419283c126887331e6aafc682dfc957354ce81a"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "deae9251640745592d7d49a84c737fc5834b7fc5"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "13b71a7d97ec297df9bf428378e9b3e2e47c2926"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "87d3446c3927599d6485fa63df501b7fd2341f5a"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "71f818b98d02247568a1421bf42ca6831bb8bf8a"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "515f9db4859993515174e3ff129861ab47042af3"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "e2e068213d4e24c31121be49dd39c23daa2100df"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "e969fbb2ce811504baeff026dbf58ef2d2d33f7e"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "db85aaee27f1629cc6d9b65ca294a9433beff6e0"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "4774253596ff7c34e39329c32304e39eccb89725"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "661fa97f5b885c56ad33a338d4d405c6d5f6c7c9"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "cafe79e72d10f58e8a3b431c27cef086b753ef8f"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "7d392f3f247a97e5201d4443bd8943ef5717048c"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "819e7895e7f0e5c24104991ffeda37bc104a7976"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "22671a69531175fdeb41664ec9e5b615aaba2686"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "bf45ecdf8cc5f2d2713c13ff465df8345928e573"
+    },
+    {
+      "source": "add9e1972b68487af3d64c79ab9883746f1a95f8",
+      "target": "0fcddfca3f4ed22fcd64fbec2b6df75e1f68226e"
+    },
+    {
+      "source": "ba1f547b83040904568f181a39ebe6d7e29dd438",
+      "target": "6b29ff21159b232b7d8c19079d35be407c846c20"
+    },
+    {
+      "source": "ba1f547b83040904568f181a39ebe6d7e29dd438",
+      "target": "29d5bc40bd86dc148c2e945b32524782fb23441d"
+    },
+    {
+      "source": "ba1f547b83040904568f181a39ebe6d7e29dd438",
+      "target": "e3f9a40a0f8e1a482793fa41ca44dca722891a71"
+    },
+    {
+      "source": "ba1f547b83040904568f181a39ebe6d7e29dd438",
+      "target": "054f239fd098ad502c51f507ba3bc68e19a88a19"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "32b826ab2245430d24331b62fa9d50dedd91d36d"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "a862671a5742ca604930713c527c062b435ad7e8"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "ea375f867f0b53e17a19ab2c62bf18eac5fb8879"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "deae9251640745592d7d49a84c737fc5834b7fc5"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "cc32715d1ca84e71c293f69545c266ce554e7fc1"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "89c9e6649080092400ae0915c6b8bd775c38d3d2"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "e2e068213d4e24c31121be49dd39c23daa2100df"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "63a36de4f8f483ab17704d87575eadbe83635e62"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "85bebf3f7b4051c6354a83066c232c1be699ed6c"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "2415e044ef903efac044eff3f4d0c94099dcc54d"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "ef89552a021392495960e82a541dc94ae7519b85"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "22671a69531175fdeb41664ec9e5b615aaba2686"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "351f268724b842fa19b27b0108b70fd8e4cfab49"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "97d7b7222551a6fce7173dea37a79f9ac8eba2b3"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "242d393b23fbb220573a16ac2d62baa320e8d5b6"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "87d3446c3927599d6485fa63df501b7fd2341f5a"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "27d26e72413d5df45870185af8b3d8bd6092eba5"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "f0239f76e2b3cd2848411cc9b1377c2dee371f65"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "29d5bc40bd86dc148c2e945b32524782fb23441d"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "4774253596ff7c34e39329c32304e39eccb89725"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "1a757528c43e9a0e5f70805ca5d162d0b1f1d7c8"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "054f239fd098ad502c51f507ba3bc68e19a88a19"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "1034b4f5e6c5da7590b4e9e0feafc8f324f4f312"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "3c6a644f374ee89172fcba7ea81a076e606a1c2d"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "e8450750b01cdeefd30d7ec4e00a8daa71b4283e"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "2976dca482a762ca3b62088ab9a6d369275bbc73"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "d2778f747cbcaa9cf1c7d4c5d1c3687ac6d79739"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "bbe907de3de83dd5988dbd15c133634d108a7386"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "b8e5964458334d4c917d114506a7cbb4245b4d51"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "8c2e2d9293f21b297e743e43c4477935061fa098"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "5bcac6b5dd837f8c3132c188f7f9f2ded43f43e1"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "be21399af86efeb91041d55d063103aa33f973a2"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "63de27596bc1390a899463e7cbfd68f6951b3a3b"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "6d3cbd13cf0de76e630b837510497e3e19e35847"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "78fabf3886d22e54d1f37aa3952b2eb8638fb130"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "778c00453d5f4c000f324f2d3cb479dfd3936ba2"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "ab340c1d21bc05ddb544ff8b7821d1c9a1c88f64"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "b79c600bca2e41b7840e8e68c6da60b28e787f95"
+    },
+    {
+      "source": "6b29ff21159b232b7d8c19079d35be407c846c20",
+      "target": "e3f9a40a0f8e1a482793fa41ca44dca722891a71"
+    },
+    {
+      "source": "b8e5964458334d4c917d114506a7cbb4245b4d51",
+      "target": "d2778f747cbcaa9cf1c7d4c5d1c3687ac6d79739"
+    },
+    {
+      "source": "b8e5964458334d4c917d114506a7cbb4245b4d51",
+      "target": "be21399af86efeb91041d55d063103aa33f973a2"
+    },
+    {
+      "source": "b8e5964458334d4c917d114506a7cbb4245b4d51",
+      "target": "29d5bc40bd86dc148c2e945b32524782fb23441d"
+    },
+    {
+      "source": "bbe907de3de83dd5988dbd15c133634d108a7386",
+      "target": "29d5bc40bd86dc148c2e945b32524782fb23441d"
+    },
+    {
+      "source": "bbe907de3de83dd5988dbd15c133634d108a7386",
+      "target": "d2778f747cbcaa9cf1c7d4c5d1c3687ac6d79739"
+    },
+    {
+      "source": "bbe907de3de83dd5988dbd15c133634d108a7386",
+      "target": "be21399af86efeb91041d55d063103aa33f973a2"
+    },
+    {
+      "source": "bbe907de3de83dd5988dbd15c133634d108a7386",
+      "target": "e3f9a40a0f8e1a482793fa41ca44dca722891a71"
+    },
+    {
+      "source": "8c2e2d9293f21b297e743e43c4477935061fa098",
+      "target": "be21399af86efeb91041d55d063103aa33f973a2"
+    },
+    {
+      "source": "8c2e2d9293f21b297e743e43c4477935061fa098",
+      "target": "e3f9a40a0f8e1a482793fa41ca44dca722891a71"
+    },
+    {
+      "source": "8c2e2d9293f21b297e743e43c4477935061fa098",
+      "target": "d2778f747cbcaa9cf1c7d4c5d1c3687ac6d79739"
+    },
+    {
+      "source": "8c2e2d9293f21b297e743e43c4477935061fa098",
+      "target": "29d5bc40bd86dc148c2e945b32524782fb23441d"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "1a757528c43e9a0e5f70805ca5d162d0b1f1d7c8"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "e3f9a40a0f8e1a482793fa41ca44dca722891a71"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "85bebf3f7b4051c6354a83066c232c1be699ed6c"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "89c9e6649080092400ae0915c6b8bd775c38d3d2"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "ea375f867f0b53e17a19ab2c62bf18eac5fb8879"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "cc32715d1ca84e71c293f69545c266ce554e7fc1"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "32b826ab2245430d24331b62fa9d50dedd91d36d"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "27d26e72413d5df45870185af8b3d8bd6092eba5"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "1034b4f5e6c5da7590b4e9e0feafc8f324f4f312"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "ef89552a021392495960e82a541dc94ae7519b85"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "f0239f76e2b3cd2848411cc9b1377c2dee371f65"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "2415e044ef903efac044eff3f4d0c94099dcc54d"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "e8450750b01cdeefd30d7ec4e00a8daa71b4283e"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "be21399af86efeb91041d55d063103aa33f973a2"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "d2778f747cbcaa9cf1c7d4c5d1c3687ac6d79739"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "ab340c1d21bc05ddb544ff8b7821d1c9a1c88f64"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "a862671a5742ca604930713c527c062b435ad7e8"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "3c6a644f374ee89172fcba7ea81a076e606a1c2d"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "63a36de4f8f483ab17704d87575eadbe83635e62"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "63de27596bc1390a899463e7cbfd68f6951b3a3b"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "22671a69531175fdeb41664ec9e5b615aaba2686"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "351f268724b842fa19b27b0108b70fd8e4cfab49"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "87d3446c3927599d6485fa63df501b7fd2341f5a"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "242d393b23fbb220573a16ac2d62baa320e8d5b6"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "71f818b98d02247568a1421bf42ca6831bb8bf8a"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "5bcac6b5dd837f8c3132c188f7f9f2ded43f43e1"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "6d3cbd13cf0de76e630b837510497e3e19e35847"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "0419283c126887331e6aafc682dfc957354ce81a"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "78fabf3886d22e54d1f37aa3952b2eb8638fb130"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "054f239fd098ad502c51f507ba3bc68e19a88a19"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "deae9251640745592d7d49a84c737fc5834b7fc5"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "97d7b7222551a6fce7173dea37a79f9ac8eba2b3"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "e2e068213d4e24c31121be49dd39c23daa2100df"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "b79c600bca2e41b7840e8e68c6da60b28e787f95"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "8675059d7ac37c5eac06c57bc35d04d59a89b98e"
+    },
+    {
+      "source": "29d5bc40bd86dc148c2e945b32524782fb23441d",
+      "target": "7d392f3f247a97e5201d4443bd8943ef5717048c"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "ab340c1d21bc05ddb544ff8b7821d1c9a1c88f64"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "ef89552a021392495960e82a541dc94ae7519b85"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "cc32715d1ca84e71c293f69545c266ce554e7fc1"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "71f818b98d02247568a1421bf42ca6831bb8bf8a"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "8675059d7ac37c5eac06c57bc35d04d59a89b98e"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "2415e044ef903efac044eff3f4d0c94099dcc54d"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "351f268724b842fa19b27b0108b70fd8e4cfab49"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "d2778f747cbcaa9cf1c7d4c5d1c3687ac6d79739"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "e8450750b01cdeefd30d7ec4e00a8daa71b4283e"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "be21399af86efeb91041d55d063103aa33f973a2"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "970809c1257ac737e61387d5923e244a6c720943"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "85bebf3f7b4051c6354a83066c232c1be699ed6c"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "a862671a5742ca604930713c527c062b435ad7e8"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "deae9251640745592d7d49a84c737fc5834b7fc5"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "6d3cbd13cf0de76e630b837510497e3e19e35847"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "63a36de4f8f483ab17704d87575eadbe83635e62"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "63de27596bc1390a899463e7cbfd68f6951b3a3b"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "ea375f867f0b53e17a19ab2c62bf18eac5fb8879"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "242d393b23fbb220573a16ac2d62baa320e8d5b6"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "22671a69531175fdeb41664ec9e5b615aaba2686"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "97d7b7222551a6fce7173dea37a79f9ac8eba2b3"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "4ee188e086799bdbe6f50fd21ab58e5a15fa2a36"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "2976dca482a762ca3b62088ab9a6d369275bbc73"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "78fabf3886d22e54d1f37aa3952b2eb8638fb130"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "183be5541d921de0c2a5454674a1ebf31fa93759"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "0419283c126887331e6aafc682dfc957354ce81a"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "3c6a644f374ee89172fcba7ea81a076e606a1c2d"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "661fa97f5b885c56ad33a338d4d405c6d5f6c7c9"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "0ede9d0421f45bac7dfcf88d1f6a3ac517d0602d"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "1a757528c43e9a0e5f70805ca5d162d0b1f1d7c8"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "5bcac6b5dd837f8c3132c188f7f9f2ded43f43e1"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "89c9e6649080092400ae0915c6b8bd775c38d3d2"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "1034b4f5e6c5da7590b4e9e0feafc8f324f4f312"
+    },
+    {
+      "source": "e3f9a40a0f8e1a482793fa41ca44dca722891a71",
+      "target": "e969fbb2ce811504baeff026dbf58ef2d2d33f7e"
+    },
+    {
+      "source": "183be5541d921de0c2a5454674a1ebf31fa93759",
+      "target": "be21399af86efeb91041d55d063103aa33f973a2"
+    },
+    {
+      "source": "183be5541d921de0c2a5454674a1ebf31fa93759",
+      "target": "d2778f747cbcaa9cf1c7d4c5d1c3687ac6d79739"
+    },
+    {
+      "source": "242d393b23fbb220573a16ac2d62baa320e8d5b6",
+      "target": "be21399af86efeb91041d55d063103aa33f973a2"
+    },
+    {
+      "source": "242d393b23fbb220573a16ac2d62baa320e8d5b6",
+      "target": "d2778f747cbcaa9cf1c7d4c5d1c3687ac6d79739"
+    },
+    {
+      "source": "778c00453d5f4c000f324f2d3cb479dfd3936ba2",
+      "target": "be21399af86efeb91041d55d063103aa33f973a2"
+    },
+    {
+      "source": "778c00453d5f4c000f324f2d3cb479dfd3936ba2",
+      "target": "d2778f747cbcaa9cf1c7d4c5d1c3687ac6d79739"
+    },
+    {
+      "source": "ab340c1d21bc05ddb544ff8b7821d1c9a1c88f64",
+      "target": "be21399af86efeb91041d55d063103aa33f973a2"
+    },
+    {
+      "source": "ab340c1d21bc05ddb544ff8b7821d1c9a1c88f64",
+      "target": "d2778f747cbcaa9cf1c7d4c5d1c3687ac6d79739"
+    },
+    {
+      "source": "8675059d7ac37c5eac06c57bc35d04d59a89b98e",
+      "target": "be21399af86efeb91041d55d063103aa33f973a2"
+    }
+  ],
+  "exported_at": "2025-12-03T23:33:16.653700"
+}
