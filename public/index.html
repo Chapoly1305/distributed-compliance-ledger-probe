@@ -587,8 +587,8 @@
         }
         #validator-panel .summary {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
             margin-bottom: 16px;
             padding-bottom: 16px;
             border-bottom: 1px solid var(--border-color);
@@ -947,6 +947,10 @@ http://54.183.6.67:26657</textarea>
                             <div class="summary-value success" id="hidden-validators">-</div>
                             <div class="summary-label">Properly Hidden</div>
                         </div>
+                        <div class="summary-item">
+                            <div class="summary-value warning" id="jailed-validators">-</div>
+                            <div class="summary-label">Jailed</div>
+                        </div>
                     </div>
                     <div class="section-title">Validator Details</div>
                     <div class="validator-list" id="validator-list">
@@ -1249,14 +1253,16 @@ http://54.183.6.67:26657</textarea>
                     };
                 });
 
-            // Count exposed vs hidden
-            const exposedCount = validatorAnalysis.filter(v => v.isExposed).length;
-            const hiddenCount = totalOnChain - exposedCount;
+            // Count exposed vs hidden vs jailed
+            const jailedCount = validatorAnalysis.filter(v => v.jailed).length;
+            const exposedCount = validatorAnalysis.filter(v => v.isExposed && !v.jailed).length;
+            const hiddenCount = totalOnChain - exposedCount - jailedCount;
 
             // Update panel summary
             document.getElementById('total-validators').textContent = totalOnChain;
             document.getElementById('exposed-validators').textContent = exposedCount;
             document.getElementById('hidden-validators').textContent = hiddenCount;
+            document.getElementById('jailed-validators').textContent = jailedCount;
 
             // Build the validator list HTML
             let listHtml = '';
