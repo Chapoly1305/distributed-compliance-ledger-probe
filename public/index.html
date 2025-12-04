@@ -206,8 +206,8 @@ http://54.183.6.67:26657</textarea>
     <script>
         const TIMEOUT = 10000;
 
-        // Set your Cloudflare Worker URL here
-        const CORS_PROXY = "https://dcl-cors-proxy.YOUR_SUBDOMAIN.workers.dev/corsproxy/?apiurl=";
+        // Cloudflare Worker CORS Proxy
+        const CORS_PROXY = "https://dcl-probe.chapoly1305.workers.dev/corsproxy/?apiurl=";
 
         function proxyUrl(url) {
             // HTTPS endpoints with CORS don't need proxy
