@@ -587,21 +587,21 @@
         }
         #validator-panel .summary {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
             margin-bottom: 16px;
             padding-bottom: 16px;
             border-bottom: 1px solid var(--border-color);
         }
         #validator-panel .summary-item {
             text-align: center;
-            padding: 12px;
+            padding: 8px 4px;
             background: var(--bg-primary);
             border-radius: 8px;
             border: 1px solid var(--border-color);
         }
         #validator-panel .summary-value {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
             color: var(--accent-blue);
         }
@@ -675,6 +675,10 @@
         #validator-panel .status-badge.jailed {
             background: rgba(210, 153, 34, 0.2);
             color: #d29922;
+        }
+        #validator-panel .status-badge.unregistered {
+            background: rgba(139, 69, 255, 0.2);
+            color: #a371f7;
         }
         #validator-panel .section-title {
             font-size: 12px;
@@ -950,6 +954,10 @@ http://54.183.6.67:26657</textarea>
                         <div class="summary-item">
                             <div class="summary-value warning" id="jailed-validators">-</div>
                             <div class="summary-label">Jailed</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value" style="color: #a371f7;" id="unregistered-validators">-</div>
+                            <div class="summary-label">Unregistered</div>
                         </div>
                     </div>
                     <div class="section-title" style="display: flex; justify-content: space-between; align-items: center;">
@@ -1261,16 +1269,44 @@ http://54.183.6.67:26657</textarea>
             // Store for connectivity testing
             lastValidatorAnalysis = validatorAnalysis;
 
+            // Build set of on-chain validator monikers for comparison
+            const onChainMonikers = new Set();
+            if (dclValidators.length > 0) {
+                dclValidators.forEach(v => {
+                    if (v.description?.moniker) {
+                        onChainMonikers.add(v.description.moniker.toLowerCase());
+                    }
+                });
+            }
+
+            // Find P2P discovered "validators" that are NOT registered on-chain
+            const unregisteredValidators = p2pValidators.filter(p2pNode => {
+                const moniker = p2pNode.moniker.toLowerCase();
+                return !onChainMonikers.has(moniker);
+            });
+
+            // Store for connectivity testing
+            lastUnregisteredValidators = unregisteredValidators;
+
+            if (unregisteredValidators.length > 0) {
+                log(`Found ${unregisteredValidators.length} P2P nodes with validator names NOT registered on-chain`, 'error');
+                unregisteredValidators.forEach(v => {
+                    log(`  ⚠ ${v.moniker} (${v.ip}) - Not in on-chain validator list`, 'error');
+                });
+            }
+
             // Count exposed vs hidden vs jailed
             const jailedCount = validatorAnalysis.filter(v => v.jailed).length;
             const exposedCount = validatorAnalysis.filter(v => v.isExposed && !v.jailed).length;
             const hiddenCount = totalOnChain - exposedCount - jailedCount;
+            const unregisteredCount = unregisteredValidators.length;
 
             // Update panel summary
             document.getElementById('total-validators').textContent = totalOnChain;
             document.getElementById('exposed-validators').textContent = exposedCount;
             document.getElementById('hidden-validators').textContent = hiddenCount;
             document.getElementById('jailed-validators').textContent = jailedCount;
+            document.getElementById('unregistered-validators').textContent = unregisteredCount;
 
             // Build the validator list HTML
             let listHtml = '';
@@ -1353,13 +1389,41 @@ http://54.183.6.67:26657</textarea>
                 `;
             }
 
+            // Add unregistered validators section if any found
+            if (unregisteredValidators.length > 0) {
+                listHtml += `
+                    <div class="section-title" style="margin-top: 20px; color: #a371f7;">
+                        ⚠ Unregistered "Validators" in P2P Network (${unregisteredValidators.length})
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-muted); padding: 8px 0;">
+                        These nodes have validator-like names (-VN-) but are NOT in the on-chain validator list.
+                    </div>
+                    ${unregisteredValidators.map(v => `
+                        <div class="validator-item">
+                            <div class="validator-info">
+                                <div class="validator-name">${v.moniker}</div>
+                                <div class="validator-details">
+                                    ${v.ip}:${v.port} | ${v.id.slice(0, 16)}...
+                                </div>
+                                <div class="validator-details" style="font-size: 10px; color: var(--text-muted);">
+                                    RPC: ${v.rpc_accessible ? 'Open' : 'Closed'} | DCL: ${v.dcl_version || 'Unknown'}
+                                </div>
+                            </div>
+                            <div class="validator-status">
+                                <span class="status-badge unregistered">Unregistered</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+            }
+
             document.getElementById('validator-list').innerHTML = listHtml;
 
             // Show panel
             document.getElementById('validator-panel').style.display = 'block';
 
-            log(`Validator probe complete: ${exposedCount} exposed via P2P, ${hiddenCount} properly hidden`,
-                exposedCount > 0 ? 'error' : 'success');
+            log(`Validator probe complete: ${exposedCount} exposed via P2P, ${hiddenCount} properly hidden${unregisteredCount > 0 ? `, ${unregisteredCount} unregistered` : ''}`,
+                exposedCount > 0 || unregisteredCount > 0 ? 'error' : 'success');
 
             btn.disabled = false;
             btn.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg> Probe Validators';
@@ -1371,6 +1435,7 @@ http://54.183.6.67:26657</textarea>
 
         // Store last validator analysis for connectivity testing
         let lastValidatorAnalysis = [];
+        let lastUnregisteredValidators = [];
 
         // Test RPC connectivity to exposed validators
         async function testValidatorConnectivity() {
@@ -1382,6 +1447,7 @@ http://54.183.6.67:26657</textarea>
 
             const results = [];
 
+            // Test registered validators that are exposed
             for (const v of lastValidatorAnalysis) {
                 if (!v.p2pMatch) continue; // Skip hidden validators
 
@@ -1417,6 +1483,45 @@ http://54.183.6.67:26657</textarea>
                     testResult.status = 'unreachable';
                     testResult.error = e.message;
                     log(`  ✗ ${v.moniker} (${ip}) - ${e.message}`, 'error');
+                }
+
+                results.push(testResult);
+            }
+
+            // Also test unregistered validators
+            for (const v of lastUnregisteredValidators) {
+                const ip = v.ip;
+                const rpcUrl = `http://${ip}:26657`;
+                const testResult = {
+                    moniker: v.moniker,
+                    ip: ip,
+                    rpcUrl: rpcUrl,
+                    status: 'testing',
+                    latency: null,
+                    blockHeight: null,
+                    error: null
+                };
+
+                try {
+                    const startTime = performance.now();
+                    const resp = await fetchWithTimeout(proxyUrl(`${rpcUrl}/status`), 5000);
+                    const endTime = performance.now();
+                    const data = await resp.json();
+
+                    if (data.result) {
+                        testResult.status = 'accessible';
+                        testResult.latency = Math.round(endTime - startTime);
+                        testResult.blockHeight = data.result.sync_info?.latest_block_height;
+                        log(`  ✓ ${v.moniker} (${ip}) - RPC accessible, ${testResult.latency}ms, height ${testResult.blockHeight} [UNREGISTERED]`, 'error');
+                    } else {
+                        testResult.status = 'error';
+                        testResult.error = 'Invalid response';
+                        log(`  ✗ ${v.moniker} (${ip}) - Invalid response [UNREGISTERED]`, 'error');
+                    }
+                } catch (e) {
+                    testResult.status = 'unreachable';
+                    testResult.error = e.message;
+                    log(`  ✗ ${v.moniker} (${ip}) - ${e.message} [UNREGISTERED]`, 'error');
                 }
 
                 results.push(testResult);
