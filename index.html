@@ -206,8 +206,8 @@ http://54.183.6.67:26657</textarea>
     <script>
         const TIMEOUT = 10000;
 
-        // Cloudflare Worker CORS Proxy
-        const CORS_PROXY = "https://dcl-probe.chapoly1305.workers.dev/corsproxy/?apiurl=";
+        // Vercel Edge Function CORS Proxy (update with your Vercel URL)
+        const CORS_PROXY = "/api/proxy?apiurl=";
 
         function proxyUrl(url) {
             // HTTPS endpoints with CORS don't need proxy
