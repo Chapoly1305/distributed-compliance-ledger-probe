@@ -645,13 +645,16 @@ http://54.183.6.67:26657</textarea>
 
             simulation.on("tick", () => {
                 linkGroup.selectAll("line")
-                    .attr("x1", d => d.source.x)
-                    .attr("y1", d => d.source.y)
-                    .attr("x2", d => d.target.x)
-                    .attr("y2", d => d.target.y);
+                    .attr("x1", d => d.source.x || 0)
+                    .attr("y1", d => d.source.y || 0)
+                    .attr("x2", d => d.target.x || 0)
+                    .attr("y2", d => d.target.y || 0)
+                    .style("visibility", d =>
+                        (d.source.x !== undefined && d.target.x !== undefined) ? "visible" : "hidden"
+                    );
 
                 nodeGroup.selectAll("g.node")
-                    .attr("transform", d => `translate(${d.x},${d.y})`);
+                    .attr("transform", d => `translate(${d.x || 0},${d.y || 0})`);
             });
         }
 
@@ -809,9 +812,14 @@ http://54.183.6.67:26657</textarea>
         function resetZoom() { svg.transition().call(zoom.transform, d3.zoomIdentity); }
 
         function exportData() {
+            // Normalize edges to use string IDs (D3 mutates them to object refs)
+            const normalizedEdges = edges.map(e => ({
+                source: typeof e.source === 'object' ? e.source.id : e.source,
+                target: typeof e.target === 'object' ? e.target.id : e.target
+            }));
             const data = {
                 nodes,
-                edges,
+                edges: normalizedEdges,
                 exported_at: new Date().toISOString()
             };
             const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -834,7 +842,11 @@ http://54.183.6.67:26657</textarea>
 
                     // Reset state
                     nodes = data.nodes || {};
-                    edges = data.edges || [];
+                    // Normalize edges to ensure they're fresh objects with string IDs
+                    edges = (data.edges || []).map(e => ({
+                        source: typeof e.source === 'object' ? e.source.id : e.source,
+                        target: typeof e.target === 'object' ? e.target.id : e.target
+                    }));
                     edgeSet.clear();
                     visitedRpcs.clear();
                     edges.forEach(e => {
