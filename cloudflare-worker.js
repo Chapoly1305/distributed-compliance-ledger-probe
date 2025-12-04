@@ -1,22 +1,30 @@
 /**
  * DCL CORS Proxy - Cloudflare Worker
- *
- * Deploy: https://dash.cloudflare.com/ -> Workers & Pages -> Create
- * Usage: https://your-worker.workers.dev/corsproxy/?apiurl=http://13.52.115.12:26657/net_info
+ * Proxies requests to DCL node RPC endpoints
  */
 
 export default {
-  async fetch(request) {
+  async fetch(request, env, ctx) {
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET,HEAD,POST,OPTIONS",
       "Access-Control-Max-Age": "86400",
     };
 
-    const PROXY_ENDPOINT = "/corsproxy/";
+    const url = new URL(request.url);
 
-    async function handleRequest(request) {
-      const url = new URL(request.url);
+    // Handle CORS preflight
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        headers: {
+          ...corsHeaders,
+          "Access-Control-Allow-Headers": request.headers.get("Access-Control-Request-Headers") || "*",
+        },
+      });
+    }
+
+    // Handle /corsproxy/ endpoint
+    if (url.pathname.startsWith("/corsproxy/")) {
       const apiUrl = url.searchParams.get("apiurl");
 
       if (!apiUrl) {
@@ -26,41 +34,39 @@ export default {
         });
       }
 
-      // Rewrite request to point to API URL
-      const newRequest = new Request(apiUrl, {
-        method: request.method,
-        headers: { "Origin": new URL(apiUrl).origin },
-      });
+      try {
+        // Use fetch with cf settings to bypass Cloudflare's IP blocking
+        const response = await fetch(apiUrl, {
+          method: request.method,
+          headers: {
+            "User-Agent": "DCL-Network-Explorer/1.0",
+            "Accept": "application/json",
+          },
+          cf: {
+            // Bypass Cloudflare's default behavior
+            cacheTtl: 0,
+            cacheEverything: false,
+          },
+        });
 
-      let response = await fetch(newRequest);
-      response = new Response(response.body, response);
-      response.headers.set("Access-Control-Allow-Origin", "*");
-      response.headers.append("Vary", "Origin");
+        const body = await response.text();
 
-      return response;
-    }
-
-    function handleOptions(request) {
-      return new Response(null, {
-        headers: {
-          ...corsHeaders,
-          "Access-Control-Allow-Headers": request.headers.get("Access-Control-Request-Headers") || "*",
-        },
-      });
-    }
-
-    const url = new URL(request.url);
-
-    if (url.pathname.startsWith(PROXY_ENDPOINT)) {
-      if (request.method === "OPTIONS") {
-        return handleOptions(request);
+        return new Response(body, {
+          status: response.status,
+          headers: {
+            "Content-Type": response.headers.get("Content-Type") || "application/json",
+            ...corsHeaders,
+          },
+        });
+      } catch (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 502,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        });
       }
-      return handleRequest(request);
     }
 
-    // Landing page
-    return new Response(`DCL CORS Proxy\n\nUsage: ${url.origin}${PROXY_ENDPOINT}?apiurl=<target_url>`, {
-      headers: { "Content-Type": "text/plain" },
-    });
+    // For all other requests, let assets handle it (returns undefined to fall through)
+    return env.ASSETS.fetch(request);
   },
 };
