@@ -1,33 +1,25 @@
-// Vercel Edge Function - CORS Proxy for DCL nodes
-export const config = {
-  runtime: 'edge',
-};
+// Vercel Serverless Function (Node.js) - CORS Proxy for DCL nodes
 
-export default async function handler(request) {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
+export default async function handler(req, res) {
+  // CORS headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   // Handle CORS preflight
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
   }
 
-  const url = new URL(request.url);
-  const apiUrl = url.searchParams.get('apiurl');
+  const apiUrl = req.query.apiurl;
 
   if (!apiUrl) {
-    return new Response(JSON.stringify({ error: 'Missing apiurl parameter' }), {
-      status: 400,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+    return res.status(400).json({ error: 'Missing apiurl parameter' });
   }
 
   try {
     const response = await fetch(apiUrl, {
-      method: request.method,
+      method: req.method,
       headers: {
         'User-Agent': 'DCL-Network-Explorer/1.0',
         'Accept': 'application/json',
@@ -36,17 +28,9 @@ export default async function handler(request) {
 
     const body = await response.text();
 
-    return new Response(body, {
-      status: response.status,
-      headers: {
-        'Content-Type': response.headers.get('Content-Type') || 'application/json',
-        ...corsHeaders,
-      },
-    });
+    res.setHeader('Content-Type', response.headers.get('Content-Type') || 'application/json');
+    return res.status(response.status).send(body);
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 502,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
-    });
+    return res.status(502).json({ error: error.message });
   }
 }
