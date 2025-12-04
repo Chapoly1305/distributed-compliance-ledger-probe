@@ -645,10 +645,19 @@ http://54.183.6.67:26657</textarea>
 
         function updateGraph() {
             const nodeArray = Object.values(nodes);
-            const validEdges = edges.filter(e => nodes[e.source] && nodes[e.target]);
+            // Handle both string IDs and object references (D3 mutates edges)
+            const validEdges = edges.filter(e => {
+                const srcId = typeof e.source === 'object' ? e.source.id : e.source;
+                const tgtId = typeof e.target === 'object' ? e.target.id : e.target;
+                return nodes[srcId] && nodes[tgtId];
+            });
 
             // Update links
-            const link = linkGroup.selectAll("line").data(validEdges, d => `${d.source}-${d.target}`);
+            const link = linkGroup.selectAll("line").data(validEdges, d => {
+                const srcId = typeof d.source === 'object' ? d.source.id : d.source;
+                const tgtId = typeof d.target === 'object' ? d.target.id : d.target;
+                return `${srcId}-${tgtId}`;
+            });
             link.exit().remove();
             link.enter().append("line").attr("class", "link");
 
