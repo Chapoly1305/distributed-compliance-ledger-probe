@@ -244,6 +244,16 @@
             </div>
             <div class="setting-row">
                 <div>
+                    <div class="setting-label">Concurrent Connections</div>
+                    <div class="setting-sublabel">Number of parallel requests</div>
+                </div>
+                <div class="setting-control">
+                    <input type="range" id="concurrentConns" min="1" max="20" value="5" oninput="updateSetting('concurrentConns')">
+                    <span class="setting-value" id="concurrentConnsVal">5</span>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div>
                     <div class="setting-label">Auto Refresh</div>
                     <div class="setting-sublabel">Periodically re-run discovery</div>
                 </div>
@@ -278,6 +288,7 @@ http://54.183.6.67:26657</textarea>
                 </div>
                 <input type="file" id="loadJson" accept=".json" onchange="loadJsonFile(event)" style="display:none">
                 <button onclick="document.getElementById('loadJson').click()" style="margin-top: 8px; background: #21262d;">Load JSON</button>
+                <button id="continueBtn" onclick="continueDiscovery()" style="margin-top: 8px; background: #1f6feb; display: none;">Continue Discovery</button>
             </div>
             <div class="section">
                 <h2>Statistics</h2>
@@ -584,7 +595,7 @@ http://54.183.6.67:26657</textarea>
 
             // Process queue
             while (discoveryQueue.length > 0) {
-                const batch = discoveryQueue.splice(0, 5); // Process 5 at a time
+                const batch = discoveryQueue.splice(0, settings.concurrentConns);
                 await Promise.all(batch.map(peerId => {
                     if (!nodes[peerId]?._discovered) {
                         return crawlNode(peerId);
@@ -772,12 +783,19 @@ http://54.183.6.67:26657</textarea>
                     nodes = data.nodes || {};
                     edges = data.edges || [];
                     edgeSet.clear();
+                    visitedRpcs.clear();
                     edges.forEach(e => {
                         const key = [e.source, e.target].sort().join("-");
                         edgeSet.add(key);
                     });
 
+                    // Count RPC-accessible nodes for potential discovery
+                    const rpcNodes = Object.values(nodes).filter(n => n.rpc_accessible);
                     log(`Loaded ${Object.keys(nodes).length} nodes, ${edges.length} edges from file`, "success");
+                    log(`${rpcNodes.length} RPC-accessible nodes available for discovery`);
+
+                    // Show continue discovery button if there are RPC-accessible nodes
+                    document.getElementById('continueBtn').style.display = rpcNodes.length > 0 ? 'block' : 'none';
 
                     updateGraph();
                     updateStats();
@@ -788,12 +806,52 @@ http://54.183.6.67:26657</textarea>
             reader.readAsText(file);
         }
 
+        async function continueDiscovery() {
+            if (isDiscovering) return;
+
+            isDiscovering = true;
+            document.getElementById("continueBtn").disabled = true;
+            document.getElementById("continueBtn").textContent = "Discovering...";
+            document.getElementById("startBtn").disabled = true;
+
+            log("Continuing discovery from loaded nodes...");
+
+            // Queue all RPC-accessible nodes that haven't been fully discovered
+            const rpcNodes = Object.values(nodes).filter(n => n.rpc_accessible && !n._discovered);
+            discoveryQueue = rpcNodes.map(n => n.id);
+
+            log(`Queued ${discoveryQueue.length} RPC-accessible nodes for crawling`);
+
+            // Also try to crawl nodes that weren't marked as RPC accessible (they might be now)
+            const nonRpcNodes = Object.values(nodes).filter(n => !n.rpc_accessible && !n._discovered);
+            discoveryQueue.push(...nonRpcNodes.map(n => n.id));
+
+            log(`Total ${discoveryQueue.length} nodes queued (including ${nonRpcNodes.length} previously inaccessible)`);
+
+            // Process queue
+            while (discoveryQueue.length > 0) {
+                const batch = discoveryQueue.splice(0, settings.concurrentConns);
+                await Promise.all(batch.map(peerId => {
+                    if (!nodes[peerId]?._discovered) {
+                        return crawlNode(peerId);
+                    }
+                }));
+            }
+
+            isDiscovering = false;
+            document.getElementById("continueBtn").disabled = false;
+            document.getElementById("continueBtn").textContent = "Continue Discovery";
+            document.getElementById("startBtn").disabled = false;
+            log(`Discovery complete: ${Object.keys(nodes).length} nodes, ${edges.length} connections`, "success");
+        }
+
         // Settings
         let settings = {
             linkOpacity: 40,
             linkWidth: 1,
             nodeScale: 100,
             showLabels: 'all',
+            concurrentConns: 5,
             autoRefresh: 0
         };
         let autoRefreshTimer = null;
@@ -808,6 +866,8 @@ http://54.183.6.67:26657</textarea>
             document.getElementById('nodeScale').value = settings.nodeScale;
             document.getElementById('nodeScaleVal').textContent = settings.nodeScale + '%';
             document.getElementById('showLabels').value = settings.showLabels;
+            document.getElementById('concurrentConns').value = settings.concurrentConns;
+            document.getElementById('concurrentConnsVal').textContent = settings.concurrentConns;
             document.getElementById('autoRefresh').value = settings.autoRefresh;
         }
 
@@ -824,6 +884,8 @@ http://54.183.6.67:26657</textarea>
                 document.getElementById('linkWidthVal').textContent = val + 'px';
             } else if (key === 'nodeScale') {
                 document.getElementById('nodeScaleVal').textContent = val + '%';
+            } else if (key === 'concurrentConns') {
+                document.getElementById('concurrentConnsVal').textContent = val;
             }
         }
 
@@ -832,6 +894,7 @@ http://54.183.6.67:26657</textarea>
             settings.linkWidth = parseInt(document.getElementById('linkWidth').value);
             settings.nodeScale = parseInt(document.getElementById('nodeScale').value);
             settings.showLabels = document.getElementById('showLabels').value;
+            settings.concurrentConns = parseInt(document.getElementById('concurrentConns').value);
             settings.autoRefresh = parseInt(document.getElementById('autoRefresh').value);
 
             // Apply link styles
