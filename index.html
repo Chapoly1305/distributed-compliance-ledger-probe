@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>DCL Network Explorer</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+            background: #0d1117;
+            color: #c9d1d9;
+            overflow: hidden;
+        }
+        #container { display: flex; height: 100vh; }
+        #sidebar {
+            width: 350px;
+            background: #161b22;
+            border-right: 1px solid #30363d;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #graph { flex: 1; position: relative; }
+        h1 {
+            padding: 16px;
+            font-size: 18px;
+            border-bottom: 1px solid #30363d;
+            background: #0d1117;
+        }
+        .section { padding: 12px 16px; border-bottom: 1px solid #30363d; }
+        .section h2 { font-size: 12px; color: #8b949e; margin-bottom: 8px; text-transform: uppercase; }
+        button {
+            background: #238636;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            width: 100%;
+        }
+        button:hover { background: #2ea043; }
+        button:disabled { background: #30363d; cursor: not-allowed; }
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .stat {
+            background: #0d1117;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-value { font-size: 24px; font-weight: bold; color: #58a6ff; }
+        .stat-label { font-size: 11px; color: #8b949e; margin-top: 4px; }
+        #log {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            font-size: 11px;
+            font-family: monospace;
+            background: #0d1117;
+        }
+        .log-entry { padding: 2px 0; color: #8b949e; }
+        .log-entry.error { color: #f85149; }
+        .log-entry.success { color: #56d364; }
+        #node-info {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            padding: 16px;
+            min-width: 280px;
+            display: none;
+            font-size: 13px;
+        }
+        #node-info h3 { margin-bottom: 12px; color: #58a6ff; }
+        #node-info .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            border-bottom: 1px solid #21262d;
+        }
+        #node-info .label { color: #8b949e; }
+        #node-info .value { color: #c9d1d9; word-break: break-all; }
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        svg { width: 100%; height: 100%; }
+        .node { cursor: pointer; }
+        .node circle { stroke: #30363d; stroke-width: 1.5px; }
+        .node text { font-size: 10px; fill: #8b949e; pointer-events: none; }
+        .node.highlighted circle { stroke: #f0883e; stroke-width: 3px; }
+        .link { stroke: #30363d; stroke-opacity: 0.6; }
+        .link.highlighted { stroke: #f0883e; stroke-opacity: 1; stroke-width: 2px; }
+        #controls {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            display: flex;
+            gap: 8px;
+        }
+        #controls button {
+            width: auto;
+            padding: 6px 12px;
+            font-size: 12px;
+            background: #21262d;
+        }
+        #controls button:hover { background: #30363d; }
+        .seed-input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 4px;
+            color: #c9d1d9;
+            font-size: 12px;
+            font-family: monospace;
+        }
+        .seed-input:focus {
+            outline: none;
+            border-color: #58a6ff;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="sidebar">
+            <h1>DCL Network Explorer</h1>
+            <div class="section">
+                <h2>Seed Nodes</h2>
+                <textarea id="seedNodes" class="seed-input" rows="3">https://on.dcl.csa-iot.org:26657
+http://13.52.115.12:26657
+http://54.183.6.67:26657</textarea>
+                <button id="startBtn" onclick="startDiscovery()" style="margin-top: 8px;">Start Discovery</button>
+                <div style="margin-top: 8px; font-size: 11px; color: #8b949e;">
+                    Requires Cloudflare Worker for HTTP endpoints.<br>
+                    See <code>cloudflare-worker.js</code>
+                </div>
+                <input type="file" id="loadJson" accept=".json" onchange="loadJsonFile(event)" style="display:none">
+                <button onclick="document.getElementById('loadJson').click()" style="margin-top: 8px; background: #21262d;">Load JSON</button>
+            </div>
+            <div class="section">
+                <h2>Statistics</h2>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="nodeCount">0</div>
+                        <div class="stat-label">Nodes</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="edgeCount">0</div>
+                        <div class="stat-label">Connections</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="rpcCount">0</div>
+                        <div class="stat-label">RPC Accessible</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="orgCount">0</div>
+                        <div class="stat-label">Organizations</div>
+                    </div>
+                </div>
+            </div>
+            <div class="section">
+                <h2>Legend</h2>
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-dot" style="background:#f97583"></div> Validator</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#56d364"></div> Sentry</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#58a6ff"></div> Observer</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#d29922"></div> Seed</div>
+                    <div class="legend-item"><div class="legend-dot" style="background:#8b949e"></div> Unknown</div>
+                </div>
+            </div>
+            <div class="section" style="flex-shrink: 0;">
+                <h2>Discovery Log</h2>
+            </div>
+            <div id="log"></div>
+        </div>
+        <div id="graph">
+            <svg></svg>
+            <div id="node-info"></div>
+            <div id="controls">
+                <button onclick="zoomIn()">Zoom +</button>
+                <button onclick="zoomOut()">Zoom -</button>
+                <button onclick="resetZoom()">Reset</button>
+                <button onclick="exportData()">Export JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const TIMEOUT = 10000;
+
+        // Set your Cloudflare Worker URL here
+        const CORS_PROXY = "https://dcl-cors-proxy.YOUR_SUBDOMAIN.workers.dev/corsproxy/?apiurl=";
+
+        function proxyUrl(url) {
+            // HTTPS endpoints with CORS don't need proxy
+            if (url.startsWith("https://on.dcl.csa-iot.org")) {
+                return url;
+            }
+            return CORS_PROXY + encodeURIComponent(url);
+        }
+
+        const typeColors = {
+            validator: "#f97583",
+            sentry: "#56d364",
+            observer: "#58a6ff",
+            seed: "#d29922",
+            unknown: "#8b949e"
+        };
+
+        // State
+        let nodes = {};        // id -> node info
+        let edges = [];        // [{source, target}]
+        let edgeSet = new Set();
+        let visitedRpcs = new Set();
+        let discoveryQueue = [];
+        let isDiscovering = false;
+
+        let simulation, svg, g, linkGroup, nodeGroup, zoom;
+
+        // Utility functions
+        function isPrivateIP(ip) {
+            return ip.startsWith("10.") ||
+                   ip.startsWith("172.16.") || ip.startsWith("172.17.") ||
+                   ip.startsWith("172.18.") || ip.startsWith("172.19.") ||
+                   ip.startsWith("172.2") || ip.startsWith("172.30.") || ip.startsWith("172.31.") ||
+                   ip.startsWith("192.168.") ||
+                   ip.startsWith("127.");
+        }
+
+        function getNodeType(moniker) {
+            const m = moniker.toLowerCase();
+            if (m.includes("-vn-") || m.endsWith("-vn")) return "validator";
+            if (m.includes("-sn-") || m.includes("sentry")) return "sentry";
+            if (m.includes("-on-") || m.includes("observer")) return "observer";
+            if (m.includes("seed")) return "seed";
+            return "unknown";
+        }
+
+        function getOrg(moniker) {
+            if (moniker.includes("-")) return moniker.split("-")[0];
+            return moniker;
+        }
+
+        function log(msg, type = "info") {
+            const logEl = document.getElementById("log");
+            const time = new Date().toLocaleTimeString();
+            const entry = document.createElement("div");
+            entry.className = `log-entry ${type}`;
+            entry.textContent = `[${time}] ${msg}`;
+            logEl.appendChild(entry);
+            logEl.scrollTop = logEl.scrollHeight;
+
+            // Keep only last 100 entries
+            while (logEl.children.length > 100) {
+                logEl.removeChild(logEl.firstChild);
+            }
+        }
+
+        // Network requests
+        async function fetchWithTimeout(url, timeout = TIMEOUT) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                return response;
+            } catch (e) {
+                clearTimeout(timeoutId);
+                throw e;
+            }
+        }
+
+        async function queryNetInfo(rpcUrl) {
+            try {
+                const resp = await fetchWithTimeout(proxyUrl(`${rpcUrl}/net_info`));
+                const data = await resp.json();
+                return data.result?.peers || [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        async function queryStatus(rpcUrl) {
+            try {
+                const resp = await fetchWithTimeout(proxyUrl(`${rpcUrl}/status`));
+                const data = await resp.json();
+                const nodeInfo = data.result?.node_info || {};
+                const syncInfo = data.result?.sync_info || {};
+                return {
+                    id: nodeInfo.id,
+                    moniker: nodeInfo.moniker,
+                    version: nodeInfo.version,
+                    height: syncInfo.latest_block_height
+                };
+            } catch (e) {
+                return null;
+            }
+        }
+
+        async function queryAbciInfo(rpcUrl) {
+            try {
+                const resp = await fetchWithTimeout(proxyUrl(`${rpcUrl}/abci_info`));
+                const data = await resp.json();
+                return data.result?.response?.version || null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // Node management
+        function addNode(id, ip, moniker, version, rpcAccessible = false, dclVersion = null, height = null) {
+            if (!nodes[id]) {
+                nodes[id] = {
+                    id,
+                    ip,
+                    port: 26656,
+                    moniker: moniker || "unknown",
+                    tendermint_version: version || "unknown",
+                    rpc_accessible: rpcAccessible,
+                    dcl_version: dclVersion,
+                    height,
+                    type: getNodeType(moniker || ""),
+                    org: getOrg(moniker || "unknown"),
+                    rpc_url: `http://${ip}:26657`
+                };
+            } else {
+                if (rpcAccessible) nodes[id].rpc_accessible = true;
+                if (dclVersion) nodes[id].dcl_version = dclVersion;
+                if (height) nodes[id].height = height;
+            }
+        }
+
+        function addEdge(sourceId, targetId) {
+            const key = [sourceId, targetId].sort().join("-");
+            if (!edgeSet.has(key)) {
+                edgeSet.add(key);
+                edges.push({ source: sourceId, target: targetId });
+            }
+        }
+
+        // Discovery
+        async function discoverFromNode(sourceId, rpcUrl) {
+            if (visitedRpcs.has(rpcUrl)) return [];
+            visitedRpcs.add(rpcUrl);
+
+            const peers = await queryNetInfo(rpcUrl);
+            const newPeers = [];
+
+            for (const peer of peers) {
+                const nodeInfo = peer.node_info || {};
+                const peerId = nodeInfo.id;
+                const remoteIp = peer.remote_ip;
+
+                if (!peerId || !remoteIp) continue;
+                if (isPrivateIP(remoteIp)) continue;
+
+                const isNew = !nodes[peerId];
+                addNode(peerId, remoteIp, nodeInfo.moniker, nodeInfo.version);
+
+                if (sourceId) {
+                    addEdge(sourceId, peerId);
+                }
+
+                if (isNew) {
+                    newPeers.push(peerId);
+                }
+            }
+
+            return newPeers;
+        }
+
+        async function crawlNode(peerId) {
+            const node = nodes[peerId];
+            if (!node) return;
+
+            const rpcUrl = node.rpc_url;
+            log(`Crawling ${node.moniker} (${node.ip})`);
+
+            // Check RPC accessibility
+            const status = await queryStatus(rpcUrl);
+            if (status) {
+                const dclVersion = await queryAbciInfo(rpcUrl);
+                addNode(peerId, node.ip, node.moniker, node.tendermint_version, true, dclVersion, status.height);
+                log(`  RPC accessible, DCL v${dclVersion || "?"}`, "success");
+            }
+
+            // Discover peers
+            const newPeers = await discoverFromNode(peerId, rpcUrl);
+            if (newPeers.length > 0) {
+                log(`  Found ${newPeers.length} new peers`);
+                discoveryQueue.push(...newPeers);
+            }
+
+            node._discovered = true;
+            updateGraph();
+            updateStats();
+        }
+
+        async function startDiscovery() {
+            if (isDiscovering) return;
+
+            // Reset state
+            nodes = {};
+            edges = [];
+            edgeSet.clear();
+            visitedRpcs.clear();
+            discoveryQueue = [];
+            isDiscovering = true;
+
+            document.getElementById("startBtn").disabled = true;
+            document.getElementById("startBtn").textContent = "Discovering...";
+            document.getElementById("log").innerHTML = "";
+
+            log("Starting peer discovery...");
+
+            // Parse seed nodes
+            const seedText = document.getElementById("seedNodes").value;
+            const seedUrls = seedText.split("\n").map(s => s.trim()).filter(s => s);
+
+            // Query seed nodes first
+            for (const rpcUrl of seedUrls) {
+                log(`Querying seed: ${rpcUrl}`);
+                const status = await queryStatus(rpcUrl);
+                if (status && status.id) {
+                    const dclVersion = await queryAbciInfo(rpcUrl);
+                    const ip = rpcUrl.replace(/https?:\/\//, "").split(":")[0];
+                    addNode(status.id, ip, status.moniker, status.version, true, dclVersion, status.height);
+
+                    const newPeers = await discoverFromNode(status.id, rpcUrl);
+                    log(`  Found ${newPeers.length} peers`, "success");
+                    discoveryQueue.push(...newPeers);
+                    nodes[status.id]._discovered = true;
+                } else {
+                    log(`  Failed to connect`, "error");
+                }
+                updateGraph();
+                updateStats();
+            }
+
+            log(`Initial discovery: ${Object.keys(nodes).length} nodes`);
+
+            // Process queue
+            while (discoveryQueue.length > 0) {
+                const batch = discoveryQueue.splice(0, 5); // Process 5 at a time
+                await Promise.all(batch.map(peerId => {
+                    if (!nodes[peerId]?._discovered) {
+                        return crawlNode(peerId);
+                    }
+                }));
+            }
+
+            isDiscovering = false;
+            document.getElementById("startBtn").disabled = false;
+            document.getElementById("startBtn").textContent = "Restart Discovery";
+            log(`Discovery complete: ${Object.keys(nodes).length} nodes, ${edges.length} connections`, "success");
+        }
+
+        // Graph visualization
+        function initGraph() {
+            svg = d3.select("svg");
+            const width = svg.node().parentElement.clientWidth;
+            const height = svg.node().parentElement.clientHeight;
+
+            zoom = d3.zoom()
+                .scaleExtent([0.1, 4])
+                .on("zoom", (event) => g.attr("transform", event.transform));
+
+            svg.call(zoom);
+            g = svg.append("g");
+
+            linkGroup = g.append("g").attr("class", "links");
+            nodeGroup = g.append("g").attr("class", "nodes");
+
+            simulation = d3.forceSimulation()
+                .force("link", d3.forceLink().id(d => d.id).distance(80))
+                .force("charge", d3.forceManyBody().strength(-200))
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .force("collision", d3.forceCollide().radius(30));
+
+            simulation.on("tick", () => {
+                linkGroup.selectAll("line")
+                    .attr("x1", d => d.source.x)
+                    .attr("y1", d => d.source.y)
+                    .attr("x2", d => d.target.x)
+                    .attr("y2", d => d.target.y);
+
+                nodeGroup.selectAll("g.node")
+                    .attr("transform", d => `translate(${d.x},${d.y})`);
+            });
+        }
+
+        function updateGraph() {
+            const nodeArray = Object.values(nodes);
+            const validEdges = edges.filter(e => nodes[e.source] && nodes[e.target]);
+
+            // Update links
+            const link = linkGroup.selectAll("line").data(validEdges, d => `${d.source}-${d.target}`);
+            link.exit().remove();
+            link.enter().append("line").attr("class", "link");
+
+            // Update nodes
+            const node = nodeGroup.selectAll("g.node").data(nodeArray, d => d.id);
+            node.exit().remove();
+
+            const nodeEnter = node.enter().append("g")
+                .attr("class", "node")
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended))
+                .on("click", showNodeInfo)
+                .on("mouseover", highlightConnections)
+                .on("mouseout", clearHighlight);
+
+            nodeEnter.append("circle")
+                .attr("r", d => d.rpc_accessible ? 12 : 8)
+                .attr("fill", d => typeColors[d.type] || typeColors.unknown);
+
+            nodeEnter.append("text")
+                .attr("dy", 20)
+                .attr("text-anchor", "middle")
+                .text(d => d.moniker.length > 15 ? d.moniker.slice(0, 15) + "..." : d.moniker);
+
+            // Update existing nodes
+            nodeGroup.selectAll("g.node circle")
+                .attr("r", d => d.rpc_accessible ? 12 : 8)
+                .attr("fill", d => typeColors[d.type] || typeColors.unknown);
+
+            // Update simulation
+            simulation.nodes(nodeArray);
+            simulation.force("link").links(validEdges);
+            simulation.alpha(0.3).restart();
+        }
+
+        function updateStats() {
+            const nodeArray = Object.values(nodes);
+            const orgs = new Set(nodeArray.map(n => n.org));
+
+            document.getElementById("nodeCount").textContent = nodeArray.length;
+            document.getElementById("edgeCount").textContent = edges.length;
+            document.getElementById("rpcCount").textContent = nodeArray.filter(n => n.rpc_accessible).length;
+            document.getElementById("orgCount").textContent = orgs.size;
+        }
+
+        function showNodeInfo(event, d) {
+            const info = document.getElementById("node-info");
+            info.style.display = "block";
+            info.innerHTML = `
+                <h3>${d.moniker}</h3>
+                <div class="row"><span class="label">Type</span><span class="value">${d.type}</span></div>
+                <div class="row"><span class="label">Organization</span><span class="value">${d.org}</span></div>
+                <div class="row"><span class="label">IP</span><span class="value">${d.ip}</span></div>
+                <div class="row"><span class="label">ID</span><span class="value" style="font-size:10px">${d.id}</span></div>
+                <div class="row"><span class="label">RPC Accessible</span><span class="value">${d.rpc_accessible ? "Yes" : "No"}</span></div>
+                <div class="row"><span class="label">DCL Version</span><span class="value">${d.dcl_version || "N/A"}</span></div>
+                <div class="row"><span class="label">Height</span><span class="value">${d.height || "N/A"}</span></div>
+                <div class="row"><span class="label">Tendermint</span><span class="value">${d.tendermint_version}</span></div>
+            `;
+        }
+
+        function highlightConnections(event, d) {
+            const connectedIds = new Set([d.id]);
+
+            linkGroup.selectAll("line").classed("highlighted", l => {
+                const srcId = typeof l.source === "object" ? l.source.id : l.source;
+                const tgtId = typeof l.target === "object" ? l.target.id : l.target;
+                if (srcId === d.id || tgtId === d.id) {
+                    connectedIds.add(srcId);
+                    connectedIds.add(tgtId);
+                    return true;
+                }
+                return false;
+            });
+
+            nodeGroup.selectAll("g.node").classed("highlighted", n => connectedIds.has(n.id));
+        }
+
+        function clearHighlight() {
+            linkGroup.selectAll("line").classed("highlighted", false);
+            nodeGroup.selectAll("g.node").classed("highlighted", false);
+        }
+
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        function zoomIn() { svg.transition().call(zoom.scaleBy, 1.3); }
+        function zoomOut() { svg.transition().call(zoom.scaleBy, 0.7); }
+        function resetZoom() { svg.transition().call(zoom.transform, d3.zoomIdentity); }
+
+        function exportData() {
+            const data = {
+                nodes,
+                edges,
+                exported_at: new Date().toISOString()
+            };
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `dcl-network-${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function loadJsonFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+
+                    // Reset state
+                    nodes = data.nodes || {};
+                    edges = data.edges || [];
+                    edgeSet.clear();
+                    edges.forEach(e => {
+                        const key = [e.source, e.target].sort().join("-");
+                        edgeSet.add(key);
+                    });
+
+                    log(`Loaded ${Object.keys(nodes).length} nodes, ${edges.length} edges from file`, "success");
+
+                    updateGraph();
+                    updateStats();
+                } catch (err) {
+                    log(`Error loading JSON: ${err.message}`, "error");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // Initialize
+        initGraph();
+
+        // Handle resize
+        window.addEventListener("resize", () => {
+            const width = svg.node().parentElement.clientWidth;
+            const height = svg.node().parentElement.clientHeight;
+            simulation.force("center", d3.forceCenter(width / 2, height / 2));
+            simulation.alpha(0.1).restart();
+        });
+    </script>
+</body>
+</html>
