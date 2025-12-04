@@ -1454,6 +1454,8 @@ http://54.183.6.67:26657</textarea>
         }
 
         function applySettings() {
+            const prevLayoutMode = settings.layoutMode;
+
             settings.theme = document.getElementById('theme').value;
             settings.linkOpacity = parseInt(document.getElementById('linkOpacity').value);
             settings.linkWidth = parseInt(document.getElementById('linkWidth').value);
@@ -1464,6 +1466,8 @@ http://54.183.6.67:26657</textarea>
             settings.concurrentConns = parseInt(document.getElementById('concurrentConns').value);
             settings.autoRefresh = parseInt(document.getElementById('autoRefresh').value);
 
+            const layoutChanged = prevLayoutMode !== settings.layoutMode;
+
             // Apply theme
             document.body.setAttribute('data-theme', settings.theme);
 
@@ -1472,11 +1476,13 @@ http://54.183.6.67:26657</textarea>
                 .style("stroke-opacity", settings.linkOpacity / 100)
                 .style("stroke-width", settings.linkWidth + "px");
 
-            // Re-render graph and reset view to center
+            // Re-render graph
             updateGraph();
 
-            // Reset zoom/pan to center the graph after layout change
-            svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
+            // Reset zoom/pan to center the graph only if layout mode changed
+            if (layoutChanged) {
+                svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
+            }
 
             // Apply label visibility
             nodeGroup.selectAll("g.node text")
