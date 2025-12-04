@@ -270,7 +270,7 @@
         .node circle {
             stroke: var(--node-stroke);
             stroke-width: 2px;
-            transition: stroke-width 0.2s, filter 0.2s;
+            transition: stroke-width 0.2s, filter 0.2s, r 0.3s ease-out;
         }
         .node:hover circle {
             filter: brightness(1.2);
@@ -1095,7 +1095,15 @@ http://54.183.6.67:26657</textarea>
 
             simulation.nodes(nodeArray);
             simulation.force("link").links(validEdges);
-            simulation.alpha(0.3).restart();
+
+            // Use lower alpha for smoother updates during discovery
+            // Only use higher alpha when explicitly needed (layout change)
+            if (!isDiscovering) {
+                simulation.alpha(0.3).restart();
+            } else {
+                // Gentler simulation during discovery to prevent flashing
+                simulation.alpha(0.1).alphaDecay(0.02).restart();
+            }
         }
 
         function applyLayout() {
