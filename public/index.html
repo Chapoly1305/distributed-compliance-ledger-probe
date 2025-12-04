@@ -231,6 +231,18 @@
             </div>
             <div class="setting-row">
                 <div>
+                    <div class="setting-label">Weighted Nodes</div>
+                    <div class="setting-sublabel">Size nodes by connection count</div>
+                </div>
+                <div class="setting-control">
+                    <select id="weightedNodes" onchange="updateSetting('weightedNodes')">
+                        <option value="true">On</option>
+                        <option value="false" selected>Off</option>
+                    </select>
+                </div>
+            </div>
+            <div class="setting-row">
+                <div>
                     <div class="setting-label">Show Labels</div>
                     <div class="setting-sublabel">Display node names</div>
                 </div>
@@ -652,6 +664,26 @@ http://54.183.6.67:26657</textarea>
                 return nodes[srcId] && nodes[tgtId];
             });
 
+            // Calculate node degrees (connection count)
+            const nodeDegrees = {};
+            edges.forEach(e => {
+                const srcId = typeof e.source === 'object' ? e.source.id : e.source;
+                const tgtId = typeof e.target === 'object' ? e.target.id : e.target;
+                nodeDegrees[srcId] = (nodeDegrees[srcId] || 0) + 1;
+                nodeDegrees[tgtId] = (nodeDegrees[tgtId] || 0) + 1;
+            });
+            const maxDegree = Math.max(...Object.values(nodeDegrees), 1);
+
+            // Helper to calculate node radius
+            function getNodeRadius(d) {
+                const baseSize = d.rpc_accessible ? 12 : 8;
+                if (!settings.weightedNodes) return baseSize;
+                const degree = nodeDegrees[d.id] || 0;
+                // Scale from 1x to 2.5x based on degree
+                const scale = 1 + (degree / maxDegree) * 1.5;
+                return baseSize * scale;
+            }
+
             // Update links
             const link = linkGroup.selectAll("line").data(validEdges, d => {
                 const srcId = typeof d.source === 'object' ? d.source.id : d.source;
@@ -676,18 +708,21 @@ http://54.183.6.67:26657</textarea>
                 .on("mouseout", clearHighlight);
 
             nodeEnter.append("circle")
-                .attr("r", d => d.rpc_accessible ? 12 : 8)
+                .attr("r", d => getNodeRadius(d) * (settings.nodeScale / 100))
                 .attr("fill", d => typeColors[d.type] || typeColors.unknown);
 
             nodeEnter.append("text")
-                .attr("dy", 20)
+                .attr("dy", d => getNodeRadius(d) * (settings.nodeScale / 100) + 8)
                 .attr("text-anchor", "middle")
                 .text(d => d.moniker.length > 15 ? d.moniker.slice(0, 15) + "..." : d.moniker);
 
             // Update existing nodes
             nodeGroup.selectAll("g.node circle")
-                .attr("r", d => d.rpc_accessible ? 12 : 8)
+                .attr("r", d => getNodeRadius(d) * (settings.nodeScale / 100))
                 .attr("fill", d => typeColors[d.type] || typeColors.unknown);
+
+            nodeGroup.selectAll("g.node text")
+                .attr("dy", d => getNodeRadius(d) * (settings.nodeScale / 100) + 8);
 
             // Update simulation
             simulation.nodes(nodeArray);
@@ -706,12 +741,21 @@ http://54.183.6.67:26657</textarea>
         }
 
         function showNodeInfo(event, d) {
+            // Calculate connections for this node
+            let connectionCount = 0;
+            edges.forEach(e => {
+                const srcId = typeof e.source === 'object' ? e.source.id : e.source;
+                const tgtId = typeof e.target === 'object' ? e.target.id : e.target;
+                if (srcId === d.id || tgtId === d.id) connectionCount++;
+            });
+
             const info = document.getElementById("node-info");
             info.style.display = "block";
             info.innerHTML = `
                 <h3>${d.moniker}</h3>
                 <div class="row"><span class="label">Type</span><span class="value">${d.type}</span></div>
                 <div class="row"><span class="label">Organization</span><span class="value">${d.org}</span></div>
+                <div class="row"><span class="label">Connections</span><span class="value">${connectionCount}</span></div>
                 <div class="row"><span class="label">IP</span><span class="value">${d.ip}</span></div>
                 <div class="row"><span class="label">ID</span><span class="value" style="font-size:10px">${d.id}</span></div>
                 <div class="row"><span class="label">RPC Accessible</span><span class="value">${d.rpc_accessible ? "Yes" : "No"}</span></div>
@@ -859,6 +903,7 @@ http://54.183.6.67:26657</textarea>
             linkOpacity: 40,
             linkWidth: 1,
             nodeScale: 100,
+            weightedNodes: false,
             showLabels: 'all',
             concurrentConns: 5,
             autoRefresh: 0
@@ -874,6 +919,7 @@ http://54.183.6.67:26657</textarea>
             document.getElementById('linkWidthVal').textContent = settings.linkWidth + 'px';
             document.getElementById('nodeScale').value = settings.nodeScale;
             document.getElementById('nodeScaleVal').textContent = settings.nodeScale + '%';
+            document.getElementById('weightedNodes').value = settings.weightedNodes ? 'true' : 'false';
             document.getElementById('showLabels').value = settings.showLabels;
             document.getElementById('concurrentConns').value = settings.concurrentConns;
             document.getElementById('concurrentConnsVal').textContent = settings.concurrentConns;
@@ -902,6 +948,7 @@ http://54.183.6.67:26657</textarea>
             settings.linkOpacity = parseInt(document.getElementById('linkOpacity').value);
             settings.linkWidth = parseInt(document.getElementById('linkWidth').value);
             settings.nodeScale = parseInt(document.getElementById('nodeScale').value);
+            settings.weightedNodes = document.getElementById('weightedNodes').value === 'true';
             settings.showLabels = document.getElementById('showLabels').value;
             settings.concurrentConns = parseInt(document.getElementById('concurrentConns').value);
             settings.autoRefresh = parseInt(document.getElementById('autoRefresh').value);
@@ -911,10 +958,8 @@ http://54.183.6.67:26657</textarea>
                 .style("stroke-opacity", settings.linkOpacity / 100)
                 .style("stroke-width", settings.linkWidth + "px");
 
-            // Apply node scale
-            const scale = settings.nodeScale / 100;
-            nodeGroup.selectAll("g.node circle")
-                .attr("r", d => (d.rpc_accessible ? 12 : 8) * scale);
+            // Re-render graph to apply node size and weighting
+            updateGraph();
 
             // Apply label visibility
             nodeGroup.selectAll("g.node text")
