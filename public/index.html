@@ -1364,7 +1364,7 @@ http://54.183.6.67:26657</textarea>
         }
 
         // Settings
-        let settings = {
+        const defaultSettings = {
             theme: 'dark',
             linkOpacity: 50,
             linkWidth: 1,
@@ -1375,6 +1375,26 @@ http://54.183.6.67:26657</textarea>
             concurrentConns: 5,
             autoRefresh: 0
         };
+
+        // Load settings from localStorage or use defaults
+        let settings = { ...defaultSettings };
+        try {
+            const saved = localStorage.getItem('dcl-explorer-settings');
+            if (saved) {
+                settings = { ...defaultSettings, ...JSON.parse(saved) };
+            }
+        } catch (e) {
+            console.warn('Failed to load settings:', e);
+        }
+
+        function saveSettings() {
+            try {
+                localStorage.setItem('dcl-explorer-settings', JSON.stringify(settings));
+            } catch (e) {
+                console.warn('Failed to save settings:', e);
+            }
+        }
+
         let autoRefreshTimer = null;
 
         function openSettings() {
@@ -1457,11 +1477,21 @@ http://54.183.6.67:26657</textarea>
                 log(`Auto-refresh set to ${settings.autoRefresh}s`);
             }
 
+            // Save to localStorage
+            saveSettings();
+
             closeSettings();
             log('Settings applied');
         }
 
+        // Apply saved settings on page load
+        function applyInitialSettings() {
+            // Apply theme
+            document.body.setAttribute('data-theme', settings.theme);
+        }
+
         // Initialize
+        applyInitialSettings();
         initGraph();
 
         window.addEventListener("resize", () => {
