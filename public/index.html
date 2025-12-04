@@ -1106,12 +1106,19 @@ http://54.183.6.67:26657</textarea>
             }
         }
 
-        // Query DCL validator module via LCD REST API (port 1317)
+        // Query DCL validator module via LCD REST API
         async function queryDclValidators(rpcUrl) {
             try {
-                // Try LCD endpoint first (replace RPC port 26657 with LCD port 1317)
-                const lcdUrl = rpcUrl.replace(':26657', ':1317').replace(':443', ':1317');
-                const resp = await fetchWithTimeout(proxyUrl(`${lcdUrl}/dcl/validator/nodes`), 5000);
+                // Build LCD URL - try different approaches
+                let lcdUrl;
+                if (rpcUrl.includes('on.dcl.csa-iot.org')) {
+                    // CSA endpoint: LCD is on same host without port (443)
+                    lcdUrl = 'https://on.dcl.csa-iot.org/dcl/validator/nodes';
+                } else {
+                    // Other endpoints: try replacing RPC port with LCD port
+                    lcdUrl = rpcUrl.replace(':26657', ':1317') + '/dcl/validator/nodes';
+                }
+                const resp = await fetchWithTimeout(proxyUrl(lcdUrl), 5000);
                 const data = await resp.json();
                 return data.validator || [];
             } catch (e) {
@@ -1175,6 +1182,14 @@ http://54.183.6.67:26657</textarea>
                 p2pByMoniker[v.moniker.toLowerCase()] = v;
             });
 
+            // Build a map from pubkey to DCL validator info (for matching consensus address)
+            const dclByPubkey = {};
+            dclValidators.forEach(v => {
+                if (v.pubKey?.key) {
+                    dclByPubkey[v.pubKey.key] = v;
+                }
+            });
+
             // Use DCL validators if available (they have monikers), otherwise use consensus validators
             const totalOnChain = dclValidators.length > 0 ? dclValidators.length : onChainValidators.length;
 
@@ -1198,13 +1213,24 @@ http://54.183.6.67:26657</textarea>
                         isExposed: !!p2pMatch
                     };
                 })
-                : onChainValidators.map(v => ({
-                    moniker: null,
-                    address: v.address,
-                    votingPower: v.voting_power,
-                    p2pMatch: null,
-                    isExposed: false
-                }));
+                : onChainValidators.map(v => {
+                    // Try to find DCL validator info by pubkey
+                    const pubkeyValue = v.pub_key?.value;
+                    const dclInfo = pubkeyValue ? dclByPubkey[pubkeyValue] : null;
+                    const moniker = dclInfo?.description?.moniker || null;
+                    const p2pMatch = moniker ? p2pByMoniker[moniker.toLowerCase()] : null;
+
+                    return {
+                        moniker,
+                        address: v.address,
+                        votingPower: v.voting_power,
+                        owner: dclInfo?.owner || null,
+                        jailed: dclInfo?.jailed || false,
+                        jailedReason: dclInfo?.jailedReason || '',
+                        p2pMatch,
+                        isExposed: !!p2pMatch
+                    };
+                });
 
             // Count exposed vs hidden
             const exposedCount = validatorAnalysis.filter(v => v.isExposed).length;
@@ -1256,46 +1282,43 @@ http://54.183.6.67:26657</textarea>
                     }).join('')}
                 `;
             } else {
-                // Fallback: show P2P discovered validators
+                // Fallback: show consensus validators with DCL info if available
                 listHtml = `
-                    <div class="section-title">P2P Discovered Validators (${p2pValidators.length})</div>
-                    ${p2pValidators.length > 0
-                        ? p2pValidators.map(v => {
-                            const statusClass = v.rpc_accessible ? 'exposed' : 'hidden';
-                            const statusText = v.rpc_accessible ? 'RPC Exposed' : 'RPC Hidden';
-                            return `
-                                <div class="validator-item">
-                                    <div class="validator-info">
-                                        <div class="validator-name">${v.moniker}</div>
-                                        <div class="validator-details">
-                                            ${v.ip}:${v.port} | ${v.id.slice(0, 16)}...
-                                        </div>
-                                    </div>
-                                    <div class="validator-status">
-                                        <span class="status-badge ${statusClass}">${statusText}</span>
+                    <div class="section-title">Consensus Validators (${onChainValidators.length})</div>
+                    ${validatorAnalysis.map(v => {
+                        let statusClass, statusText;
+                        if (v.jailed) {
+                            statusClass = 'jailed';
+                            statusText = 'Jailed';
+                        } else if (v.isExposed) {
+                            statusClass = 'exposed';
+                            statusText = 'P2P Exposed';
+                        } else {
+                            statusClass = 'hidden';
+                            statusText = 'Hidden';
+                        }
+
+                        const displayName = v.moniker || v.address;
+                        const p2pInfo = v.p2pMatch
+                            ? `<div class="validator-details">${v.p2pMatch.ip}:${v.p2pMatch.port} | RPC: ${v.p2pMatch.rpc_accessible ? 'Open' : 'Closed'}</div>`
+                            : `<div class="validator-details">Not discovered via P2P gossip</div>`;
+
+                        return `
+                            <div class="validator-item">
+                                <div class="validator-info">
+                                    <div class="validator-name">${displayName}</div>
+                                    ${p2pInfo}
+                                    <div class="validator-details" style="font-size: 10px; color: var(--text-muted);">
+                                        ${v.moniker ? `Address: ${v.address.slice(0, 12)}... | ` : ''}Voting Power: ${v.votingPower}
+                                        ${v.jailedReason ? `<br>Reason: ${v.jailedReason}` : ''}
                                     </div>
                                 </div>
-                            `;
-                        }).join('')
-                        : `<div style="text-align: center; padding: 20px; color: var(--text-secondary);">
-                            <p>No validators discovered via P2P gossip.</p>
-                            <p style="font-size: 11px; margin-top: 8px;">Run network discovery first, or validators are properly hidden.</p>
-                           </div>`
-                    }
-                    <div class="section-title" style="margin-top: 20px;">Consensus Validators (${onChainValidators.length})</div>
-                    <div style="font-size: 11px; color: var(--text-muted); padding: 8px 0;">
-                        LCD endpoint not available. Showing consensus addresses only (no monikers).
-                    </div>
-                    ${onChainValidators.map(v => `
-                        <div class="validator-item">
-                            <div class="validator-info">
-                                <div class="validator-name" style="font-family: monospace; font-size: 11px;">${v.address}</div>
-                                <div class="validator-details">
-                                    Voting Power: ${v.voting_power}
+                                <div class="validator-status">
+                                    <span class="status-badge ${statusClass}">${statusText}</span>
                                 </div>
                             </div>
-                        </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 `;
             }
 
