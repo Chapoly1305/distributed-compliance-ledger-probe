@@ -746,6 +746,18 @@
                         <span class="setting-value" id="linkWidthVal">1px</span>
                     </div>
                 </div>
+                <div class="setting-row">
+                    <div>
+                        <div class="setting-label">Directional Edges</div>
+                        <div class="setting-sublabel">Show arrows indicating who exposed whom</div>
+                    </div>
+                    <div class="setting-control">
+                        <select id="directionalEdges" onchange="updateSetting('directionalEdges')">
+                            <option value="true">On</option>
+                            <option value="false" selected>Off</option>
+                        </select>
+                    </div>
+                </div>
             </div>
 
             <div class="settings-section">
@@ -1656,9 +1668,14 @@ http://54.183.6.67:26657</textarea>
         }
 
         function addEdge(sourceId, targetId) {
-            const key = [sourceId, targetId].sort().join("-");
-            if (!edgeSet.has(key)) {
-                edgeSet.add(key);
+            // Use sorted key for deduplication (bidirectional check)
+            const sortedKey = [sourceId, targetId].sort().join("-");
+            // Use directional key to track direction (source exposed target)
+            const dirKey = `${sourceId}->${targetId}`;
+
+            if (!edgeSet.has(sortedKey)) {
+                edgeSet.add(sortedKey);
+                // Store edge with direction: source is the node that exposed target via /net_info
                 edges.push({ source: sourceId, target: targetId });
             }
         }
@@ -1753,6 +1770,33 @@ http://54.183.6.67:26657</textarea>
             svg = d3.select("#graph > svg");
             const width = svg.node().parentElement.clientWidth;
             const height = svg.node().parentElement.clientHeight;
+
+            // Add arrow marker definition for directional edges
+            const defs = svg.append("defs");
+            defs.append("marker")
+                .attr("id", "arrowhead")
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 20)
+                .attr("refY", 0)
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")
+                .attr("fill", "#8b949e");
+
+            defs.append("marker")
+                .attr("id", "arrowhead-highlight")
+                .attr("viewBox", "0 -5 10 10")
+                .attr("refX", 20)
+                .attr("refY", 0)
+                .attr("markerWidth", 6)
+                .attr("markerHeight", 6)
+                .attr("orient", "auto")
+                .append("path")
+                .attr("d", "M0,-5L10,0L0,5")
+                .attr("fill", "#f0883e");
+
             zoom = d3.zoom()
                 .scaleExtent([0.1, 4])
                 .on("zoom", (event) => g.attr("transform", event.transform));
@@ -1815,7 +1859,11 @@ http://54.183.6.67:26657</textarea>
                 return `${srcId}-${tgtId}`;
             });
             link.exit().remove();
-            link.enter().append("line").attr("class", "link");
+            const linkEnter = link.enter().append("line").attr("class", "link");
+
+            // Apply directional arrows if enabled
+            linkGroup.selectAll("line")
+                .attr("marker-end", settings.directionalEdges ? "url(#arrowhead)" : null);
 
             // Update nodes
             const node = nodeGroup.selectAll("g.node").data(nodeArray, d => d.id);
@@ -2256,7 +2304,8 @@ http://54.183.6.67:26657</textarea>
             showLabels: 'all',
             layoutMode: 'force',
             concurrentConns: 5,
-            autoRefresh: 0
+            autoRefresh: 0,
+            directionalEdges: false
         };
 
         // Load settings from localStorage or use defaults
@@ -2295,6 +2344,7 @@ http://54.183.6.67:26657</textarea>
             document.getElementById('concurrentConns').value = settings.concurrentConns;
             document.getElementById('concurrentConnsVal').textContent = settings.concurrentConns;
             document.getElementById('autoRefresh').value = settings.autoRefresh;
+            document.getElementById('directionalEdges').value = settings.directionalEdges ? 'true' : 'false';
         }
 
         function closeSettings() {
@@ -2327,6 +2377,7 @@ http://54.183.6.67:26657</textarea>
             settings.layoutMode = document.getElementById('layoutMode').value;
             settings.concurrentConns = parseInt(document.getElementById('concurrentConns').value);
             settings.autoRefresh = parseInt(document.getElementById('autoRefresh').value);
+            settings.directionalEdges = document.getElementById('directionalEdges').value === 'true';
 
             const layoutChanged = prevLayoutMode !== settings.layoutMode;
 
