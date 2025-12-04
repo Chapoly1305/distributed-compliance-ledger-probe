@@ -566,6 +566,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
+            cursor: move;
+            user-select: none;
         }
         #validator-panel .close-btn {
             background: none;
@@ -1352,6 +1354,65 @@ http://54.183.6.67:26657</textarea>
         function closeValidatorPanel() {
             document.getElementById('validator-panel').style.display = 'none';
         }
+
+        // Make validator panel draggable
+        (function() {
+            const panel = document.getElementById('validator-panel');
+            const header = panel.querySelector('h3');
+            let isDragging = false;
+            let startX, startY, startLeft, startTop;
+
+            header.addEventListener('mousedown', (e) => {
+                // Don't drag if clicking close button
+                if (e.target.closest('.close-btn')) return;
+
+                isDragging = true;
+                const rect = panel.getBoundingClientRect();
+
+                // Remove transform and set explicit position on first drag
+                if (panel.style.transform) {
+                    panel.style.left = rect.left + 'px';
+                    panel.style.top = rect.top + 'px';
+                    panel.style.transform = 'none';
+                }
+
+                startX = e.clientX;
+                startY = e.clientY;
+                startLeft = rect.left;
+                startTop = rect.top;
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+                e.preventDefault();
+            });
+
+            function onMouseMove(e) {
+                if (!isDragging) return;
+
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+
+                let newLeft = startLeft + dx;
+                let newTop = startTop + dy;
+
+                // Keep panel within viewport
+                const rect = panel.getBoundingClientRect();
+                const maxLeft = window.innerWidth - rect.width;
+                const maxTop = window.innerHeight - rect.height;
+
+                newLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                newTop = Math.max(0, Math.min(newTop, maxTop));
+
+                panel.style.left = newLeft + 'px';
+                panel.style.top = newTop + 'px';
+            }
+
+            function onMouseUp() {
+                isDragging = false;
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+        })();
 
         // Node management
         function addNode(id, ip, moniker, version, rpcAccessible = false, dclVersion = null, height = null) {
