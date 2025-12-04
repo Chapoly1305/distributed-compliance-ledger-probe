@@ -631,7 +631,13 @@ http://54.183.6.67:26657</textarea>
                 .scaleExtent([0.1, 4])
                 .on("zoom", (event) => g.attr("transform", event.transform));
 
-            svg.call(zoom);
+            svg.call(zoom)
+               .on("click", (event) => {
+                   // Clear selection when clicking on background (not on a node)
+                   if (event.target.tagName === "svg") {
+                       clearSelection();
+                   }
+               });
             g = svg.append("g");
 
             linkGroup = g.append("g").attr("class", "links");
@@ -752,6 +758,9 @@ http://54.183.6.67:26657</textarea>
                 if (srcId === d.id || tgtId === d.id) connectionCount++;
             });
 
+            // Persistently highlight this node's connections
+            highlightConnections(event, d, true);
+
             const info = document.getElementById("node-info");
             info.style.display = "block";
             info.innerHTML = `
@@ -768,7 +777,12 @@ http://54.183.6.67:26657</textarea>
             `;
         }
 
-        function highlightConnections(event, d) {
+        let selectedNodeId = null;
+
+        function highlightConnections(event, d, persistent = false) {
+            if (persistent) {
+                selectedNodeId = d.id;
+            }
             const connectedIds = new Set([d.id]);
 
             linkGroup.selectAll("line").classed("highlighted", l => {
@@ -786,6 +800,18 @@ http://54.183.6.67:26657</textarea>
         }
 
         function clearHighlight() {
+            // Don't clear if we have a selected node - restore its highlight
+            if (selectedNodeId && nodes[selectedNodeId]) {
+                highlightConnections(null, nodes[selectedNodeId], false);
+            } else {
+                linkGroup.selectAll("line").classed("highlighted", false);
+                nodeGroup.selectAll("g.node").classed("highlighted", false);
+            }
+        }
+
+        function clearSelection() {
+            selectedNodeId = null;
+            document.getElementById("node-info").style.display = "none";
             linkGroup.selectAll("line").classed("highlighted", false);
             nodeGroup.selectAll("g.node").classed("highlighted", false);
         }
