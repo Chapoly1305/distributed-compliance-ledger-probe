@@ -868,6 +868,10 @@ http://54.183.6.67:26657</textarea>
 
                     // Reset state
                     nodes = data.nodes || {};
+                    // Clear _discovered flag so nodes can be re-crawled
+                    Object.values(nodes).forEach(n => {
+                        delete n._discovered;
+                    });
                     // Normalize edges to ensure they're fresh objects with string IDs
                     edges = (data.edges || []).map(e => ({
                         source: typeof e.source === 'object' ? e.source.id : e.source,
